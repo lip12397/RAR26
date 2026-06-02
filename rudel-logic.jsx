@@ -87,4 +87,10 @@ function drawCard(cards, preferredType, usedIds, drinks = true) {
   return shuffle(pool)[0];
 }
 
-Object.assign(window, { shuffle, autoTeams, pairKey, teamOf, pickGroup, drawCard });
+Object.assign(window, { shuffle, autoTeams, pairKey, teamOf, pickGroup, drawCard, pickTeamNames });
+
+// 2 unterschiedliche Bandnamen aus dem Pool ziehen.
+function pickTeamNames() {
+  const pool = shuffle(RUDEL_TEAM_NAMES);
+  return { A: pool[0], B: pool[1] };
+}

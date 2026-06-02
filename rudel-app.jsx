@@ -5,6 +5,7 @@ const STORE_KEY = 'rudel_state_v2';
 const INITIAL = {
   screen: 'start', started: false,
   players: [], teams: { A: [], B: [] },
+  teamNames: { A: 'A', B: 'B' },
   scores: { A: 0, B: 0 },
   history: [], usedCards: [], activeCount: {},
   round: 0, nextType: 'match', bluffCount: 0, current: null,
@@ -44,10 +45,14 @@ function App() {
   const setDrinks = drinks => patch({ drinks });
 
   const startGame = () => patch({
-    started: true, screen: 'hub', scores: { A: 0, B: 0 },
+    started: true, screen: 'team_reveal_a',
+    teamNames: pickTeamNames(),
+    scores: { A: 0, B: 0 },
     history: [], usedCards: [], activeCount: {}, round: 0,
     nextType: 'match', bluffCount: 0, current: null,
   });
+  const revealNextA = () => patch({ screen: 'team_reveal_b' });
+  const revealDone = () => patch({ screen: 'hub' });
 
   // ── Karte ziehen ──
   const draw = () => setG(prev => {
@@ -113,14 +118,18 @@ function App() {
     screen = <StartScreen onStart={G.started ? newGame : goSetup} hasGame={G.started} onContinue={continueGame} />;
   } else if (G.screen === 'setup') {
     screen = <SetupScreen players={G.players} setPlayers={setPlayers} teams={G.teams} setTeams={setTeams} drinks={G.drinks} setDrinks={setDrinks} onBack={quit} onStartGame={startGame} />;
+  } else if (G.screen === 'team_reveal_a') {
+    screen = <TeamRevealScreen team="A" name={G.teamNames.A} players={G.players} teams={G.teams} step={1} onContinue={revealNextA} />;
+  } else if (G.screen === 'team_reveal_b') {
+    screen = <TeamRevealScreen team="B" name={G.teamNames.B} players={G.players} teams={G.teams} step={2} onContinue={revealDone} />;
   } else if (G.screen === 'card' && G.current) {
-    screen = <CardScreen key={G.round + '-' + G.current.card.id} current={G.current} drinks={G.drinks} nameOf={nameOf} teamOfId={teamOfId} onResolve={resolve} onSkipCard={skipCard} />;
+    screen = <CardScreen key={G.round + '-' + G.current.card.id} current={G.current} drinks={G.drinks} teamNames={G.teamNames} nameOf={nameOf} teamOfId={teamOfId} onResolve={resolve} onSkipCard={skipCard} />;
   } else if (G.screen === 'score') {
-    screen = <ScoreScreen scores={G.scores} round={G.round} onBack={continueGame} onNext={() => { patch({ screen: 'hub' }); }} />;
+    screen = <ScoreScreen scores={G.scores} teamNames={G.teamNames} round={G.round} onBack={continueGame} onNext={() => { patch({ screen: 'hub' }); }} />;
   } else if (G.screen === 'end') {
-    screen = <EndScreen scores={G.scores} round={G.round} onRestartSameCrew={restartSameCrew} onNewCrew={newGame} />;
+    screen = <EndScreen scores={G.scores} teamNames={G.teamNames} round={G.round} onRestartSameCrew={restartSameCrew} onNewCrew={newGame} />;
   } else {
-    screen = <HubScreen scores={G.scores} round={G.round} nextType={G.nextType} onDraw={draw} onScore={() => patch({ screen: 'score' })} onQuit={quit} />;
+    screen = <HubScreen scores={G.scores} teamNames={G.teamNames} round={G.round} nextType={G.nextType} onDraw={draw} onScore={() => patch({ screen: 'score' })} onQuit={quit} />;
   }
 
   return (

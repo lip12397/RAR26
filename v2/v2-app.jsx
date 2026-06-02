@@ -67,7 +67,13 @@ function V2_App() {
     const akt = V2_aktOf(prev.round, prev.aktThresholds);
     const deck = V2_filterDeck(V2_CARDS, prev.config.tone, prev.config.drinks);
     const type = prev.nextType || V2_nextTypeForAkt(akt, prev.lastType);
-    let baseCard = V2_drawCard(deck, type, prev.usedCards);
+    // Twist AN → bevorzuge Karten mit Twist
+    let baseCard = null;
+    if (prev.twistOn) {
+      const twistedDeck = deck.filter(c => c.twist);
+      baseCard = V2_drawCard(twistedDeck, type, prev.usedCards);
+    }
+    if (!baseCard) baseCard = V2_drawCard(deck, type, prev.usedCards);
     if (!baseCard) baseCard = V2_drawCard(V2_CARDS, type, prev.usedCards); // safety
     const useTwist = prev.twistOn && baseCard.twist;
     const card = useTwist

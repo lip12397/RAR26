@@ -188,4 +188,48 @@ const rowStyle = { display: 'flex', alignItems: 'center', gap: 12, background: '
 const delBtn = { width: 38, height: 38, flexShrink: 0, background: 'none', border: '1px solid #2c2c33', borderRadius: 10, color: PALETTE.dim, fontSize: 15, cursor: 'pointer' };
 const reshuffleBtn = { background: 'none', border: `2px solid #2c2c33`, color: PALETTE.ink, borderRadius: 13, padding: '13px', fontFamily: 'Anton, sans-serif', fontSize: 17, letterSpacing: '1px', cursor: 'pointer' };
 
-Object.assign(window, { StartScreen, SetupScreen });
+Object.assign(window, { StartScreen, SetupScreen, TeamRevealScreen });
+
+// ─────────────────────────────────────────────────────────────
+// TEAM REVEAL — Bandnamen-Vorstellung
+// ─────────────────────────────────────────────────────────────
+function TeamRevealScreen({ team, name, players, teams, step, onContinue }) {
+  const c = teamColor(team);
+  const memberNames = (teams[team] || []).map(id => (players.find(p => p.id === id) || {}).name || '').filter(Boolean);
+  const isLast = step === 2;
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px', position: 'relative', overflow: 'hidden' }}>
+      <HazardBar color={c} style={{ position: 'absolute', top: 0, left: 0 }} />
+      <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+        <Sticker color={c} rotate={-3}>VORSTELLUNG · {step}/2</Sticker>
+        <Sticker color={PALETTE.B} rotate={2}>TEAM {team}</Sticker>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16 }}>
+        <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '3px', color: PALETTE.dim }}>EUER NAME IST…</div>
+        <div style={{
+          fontFamily: 'Anton, sans-serif', fontSize: 64, lineHeight: 0.88, color: PALETTE.ink,
+          letterSpacing: '-1px', transform: 'rotate(-1.5deg)', wordBreak: 'break-word',
+          textShadow: `5px 5px 0 ${c}, 10px 10px 0 ${shade(c)}`,
+        }}>{name}</div>
+
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '2px', color: PALETTE.dim, marginBottom: 8 }}>RUDEL · {memberNames.length} LEUTE</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {memberNames.map(n => (
+              <span key={n} style={{
+                fontFamily: 'Anton, sans-serif', fontSize: 18, color: '#0a0a0c',
+                background: c, padding: '5px 11px', borderRadius: 7,
+                boxShadow: `0 3px 0 ${shade(c)}`,
+              }}>{n}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <BigButton color={c} onClick={onContinue} sub={isLast ? 'ERSTE KARTE ZIEHEN' : 'JETZT TEAM 2'}>
+        {isLast ? "LOS GEHT'S!" : 'WEITER →'}
+      </BigButton>
+    </div>
+  );
+}

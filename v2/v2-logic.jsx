@@ -108,14 +108,20 @@ function V2_nextTypeForAkt(akt, lastType) {
 // Tonalitäts-Faktor für Timer (Chill = entspannter, Wild = schneller)
 const V2_tonePace = t => ({ chill: 1.4, standard: 1, wild: 0.85 }[t] || 1);
 
-// Karten-Pool nach Tonalität + Drinks filtern
+// Karten-Pool nach Tonalität + Drinks filtern.
+// Drinks AN → drink-only Karten 3× gewichten = ~3× häufiger gezogen.
 function V2_filterDeck(cards, tone, drinks) {
-  return cards.filter(c => {
+  const filtered = cards.filter(c => {
     if (c.drinksRequired && !drinks) return false;
-    // Chill: keine drinks-required Karten + keine Chaos-Kategorien
+    // Chill: keine Chaos-Kategorien
     if (tone === 'chill' && c.category && c.category.includes('CHAOS')) return false;
     return true;
   });
+  if (drinks) {
+    const drinkers = filtered.filter(c => c.drinksRequired);
+    return [...filtered, ...drinkers, ...drinkers]; // 3× Gewichtung
+  }
+  return filtered;
 }
 
 // Karte ziehen — innerhalb des Typs frische zuerst, dann neu mischen.

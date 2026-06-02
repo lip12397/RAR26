@@ -2,12 +2,13 @@
 const { useState: useStateG, useEffect: useEffectG, useRef: useRefG } = React;
 
 // kompaktes Punkte-Band (immer sichtbar), antippbar → Punktestand
-function ScoreBand({ scores, onOpen }) {
+function ScoreBand({ scores, teamNames, onOpen }) {
   const lead = scores.A === scores.B ? null : scores.A > scores.B ? 'A' : 'B';
+  const tn = t => (teamNames && teamNames[t] && teamNames[t] !== t) ? teamNames[t] : `TEAM ${t}`;
   const cell = (t) => (
     <div style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
-      <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '2px', color: teamColor(t), opacity: lead && lead !== t ? 0.5 : 1 }}>
-        TEAM {t}{lead === t ? ' ▲' : ''}
+      <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 10, letterSpacing: '1.5px', color: teamColor(t), opacity: lead && lead !== t ? 0.5 : 1, wordBreak: 'break-word', lineHeight: 1.15 }}>
+        {tn(t)}{lead === t ? ' ▲' : ''}
       </div>
       <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 38, lineHeight: 0.9, color: lead === t ? teamColor(t) : PALETTE.ink, textShadow: lead === t ? `0 0 16px ${teamColor(t)}99` : 'none' }}>{scores[t]}</div>
     </div>
@@ -27,7 +28,7 @@ function ScoreBand({ scores, onOpen }) {
 // ─────────────────────────────────────────────────────────────
 // HUB — „Nächste Runde" ziehen
 // ─────────────────────────────────────────────────────────────
-function HubScreen({ scores, round, nextType, onDraw, onScore, onQuit }) {
+function HubScreen({ scores, teamNames, round, nextType, onDraw, onScore, onQuit }) {
   const isMatch = nextType === 'match';
   const c = isMatch ? PALETTE.match : PALETTE.bluff;
   return (
@@ -37,7 +38,7 @@ function HubScreen({ scores, round, nextType, onDraw, onScore, onQuit }) {
         <Sticker color={PALETTE.B} rotate={3}>{RUDEL_THEME.festival} {RUDEL_THEME.year}</Sticker>
       </div>
 
-      <ScoreBand scores={scores} onOpen={onScore} />
+      <ScoreBand scores={scores} teamNames={teamNames} onOpen={onScore} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '3px', color: PALETTE.dim }}>RUNDE</div>
@@ -63,7 +64,8 @@ function HubScreen({ scores, round, nextType, onDraw, onScore, onQuit }) {
 // ─────────────────────────────────────────────────────────────
 // SPIELKARTE — Vollbild, Timer, ein Hauptbutton
 // ─────────────────────────────────────────────────────────────
-function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }) {
+function CardScreen({ current, drinks, teamNames, nameOf, teamOfId, onResolve, onSkipCard }) {
+  const tn = t => (teamNames && teamNames[t] && teamNames[t] !== t) ? teamNames[t] : `TEAM ${t}`;
   const { card, group, actingTeam, guessTeam } = current;
   const isMatch = card.type === 'match';
   const accent = isMatch ? PALETTE.match : PALETTE.bluff;
@@ -122,11 +124,11 @@ function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
           <div style={{ flex: 1, border: `2px solid ${teamColor(actingTeam)}`, borderRadius: 12, padding: '10px 12px', textAlign: 'center' }}>
             <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 10, letterSpacing: '1.5px', color: PALETTE.dim }}>MACHT</div>
-            <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 30, color: teamColor(actingTeam) }}>TEAM {actingTeam}</div>
+            <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 22, lineHeight: 1.05, color: teamColor(actingTeam), wordBreak: 'break-word' }}>{tn(actingTeam)}</div>
           </div>
           <div style={{ flex: 1, border: `2px solid ${teamColor(guessTeam)}`, borderRadius: 12, padding: '10px 12px', textAlign: 'center' }}>
             <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 10, letterSpacing: '1.5px', color: PALETTE.dim }}>RÄT</div>
-            <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 30, color: teamColor(guessTeam) }}>TEAM {guessTeam}</div>
+            <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 22, lineHeight: 1.05, color: teamColor(guessTeam), wordBreak: 'break-word' }}>{tn(guessTeam)}</div>
           </div>
         </div>
       )}
@@ -174,7 +176,7 @@ function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }
   } else { // resolve
     if (isMatch) {
       const teamsRep = [...new Set(group.map(teamOfId))];
-      const note = teamsRep.length > 1 ? `+1 für Team ${teamsRep.join(' & Team ')}` : `+1 für Team ${teamsRep[0]}`;
+      const note = teamsRep.length > 1 ? `+1 für ${teamsRep.map(tn).join(' & ')}` : `+1 für ${tn(teamsRep[0])}`;
       action = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <BigButton color={PALETTE.bluff} onClick={() => onResolve(
@@ -189,15 +191,15 @@ function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }
       action = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', gap: 10 }}>
-            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(guessTeam)} onClick={() => onResolve(
-              guessTeam === 'A' ? 2 : 0, guessTeam === 'B' ? 2 : 0,
-              { text: 'RICHTIG GERATEN!', color: teamColor(guessTeam) })} sub={`TEAM ${guessTeam} +2`}>
-              GERATEN
-            </BigButton>
             <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(actingTeam)} onClick={() => onResolve(
               actingTeam === 'A' ? 2 : 0, actingTeam === 'B' ? 2 : 0,
-              { text: 'GEBLUFFT!', color: teamColor(actingTeam) })} sub={`TEAM ${actingTeam} +2`}>
-              GEBLUFFT
+              { text: 'REINGELEGT!', color: teamColor(actingTeam) })} sub={`${tn(actingTeam)} +2`}>
+              REINGELEGT
+            </BigButton>
+            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(guessTeam)} onClick={() => onResolve(
+              guessTeam === 'A' ? 2 : 0, guessTeam === 'B' ? 2 : 0,
+              { text: 'RICHTIG GERATEN!', color: teamColor(guessTeam) })} sub={`${tn(guessTeam)} +2`}>
+              GERATEN
             </BigButton>
           </div>
           <button onClick={() => onResolve(0, 0, { text: 'KEIN PUNKT', color: PALETTE.dim })} style={skipLink}>Kein Punkt</button>
@@ -230,7 +232,8 @@ function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }
 // ─────────────────────────────────────────────────────────────
 // PUNKTESTAND
 // ─────────────────────────────────────────────────────────────
-function ScoreScreen({ scores, round, onBack, onNext }) {
+function ScoreScreen({ scores, teamNames, round, onBack, onNext }) {
+  const tn = t => (teamNames && teamNames[t] && teamNames[t] !== t) ? teamNames[t] : `TEAM ${t}`;
   const lead = scores.A === scores.B ? null : scores.A > scores.B ? 'A' : 'B';
   const diff = Math.abs(scores.A - scores.B);
   const big = (t) => {
@@ -243,8 +246,8 @@ function ScoreScreen({ scores, round, onBack, onNext }) {
         boxShadow: win ? `0 0 40px ${teamColor(t)}55` : 'none',
         transform: win ? 'scale(1.02)' : 'none',
       }}>
-        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 20, letterSpacing: '1px', color: win ? '#0a0a0c' : teamColor(t) }}>
-          {win ? '★ ' : ''}TEAM {t}
+        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 16, letterSpacing: '0.5px', color: win ? '#0a0a0c' : teamColor(t), wordBreak: 'break-word', lineHeight: 1.05 }}>
+          {win ? '★ ' : ''}{tn(t)}
         </div>
         <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 110, lineHeight: 0.82, color: win ? '#0a0a0c' : PALETTE.ink, margin: '6px 0' }}>{scores[t]}</div>
         <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 11, letterSpacing: '1.5px', color: win ? 'rgba(10,10,12,0.6)' : PALETTE.dim }}>
@@ -274,7 +277,8 @@ const skipLink = { background: 'none', border: 'none', color: PALETTE.dim, fontF
 // ─────────────────────────────────────────────────────────────
 // END — alle Karten durch
 // ─────────────────────────────────────────────────────────────
-function EndScreen({ scores, round, onRestartSameCrew, onNewCrew }) {
+function EndScreen({ scores, teamNames, round, onRestartSameCrew, onNewCrew }) {
+  const tn = t => (teamNames && teamNames[t] && teamNames[t] !== t) ? teamNames[t] : `TEAM ${t}`;
   const lead = scores.A === scores.B ? null : scores.A > scores.B ? 'A' : 'B';
   const diff = Math.abs(scores.A - scores.B);
   const winColor = lead ? teamColor(lead) : PALETTE.ink;
@@ -307,16 +311,16 @@ function EndScreen({ scores, round, onRestartSameCrew, onNewCrew }) {
                 boxShadow: win ? `0 0 40px ${teamColor(t)}66` : 'none',
                 transform: win ? 'scale(1.04)' : 'none',
               }}>
-                <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 16, letterSpacing: '1px', color: win ? '#0a0a0c' : teamColor(t) }}>
-                  {win ? '★ TEAM ' : 'TEAM '}{t}
+                <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 14, letterSpacing: '0.5px', color: win ? '#0a0a0c' : teamColor(t), wordBreak: 'break-word', lineHeight: 1.05 }}>
+                  {win ? '★ ' : ''}{tn(t)}
                 </div>
                 <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 80, lineHeight: 0.82, color: win ? '#0a0a0c' : PALETTE.ink, margin: '4px 0 2px' }}>{scores[t]}</div>
               </div>
             );
           })}
         </div>
-        <div style={{ textAlign: 'center', fontFamily: 'Anton, sans-serif', fontSize: 22, color: winColor, letterSpacing: '0.5px' }}>
-          {lead ? `TEAM ${lead} GEWINNT MIT +${diff}` : 'UNENTSCHIEDEN'}
+        <div style={{ textAlign: 'center', fontFamily: 'Anton, sans-serif', fontSize: 20, color: winColor, letterSpacing: '0.5px', wordBreak: 'break-word', lineHeight: 1.1 }}>
+          {lead ? `${tn(lead)} GEWINNT MIT +${diff}` : 'UNENTSCHIEDEN'}
         </div>
       </div>
 
