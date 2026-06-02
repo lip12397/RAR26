@@ -1,7 +1,7 @@
-// v2-screens-game.jsx — Hub, Karte (3 Resolve-Modi), Leaderboard
+// v2-screens-game.jsx — Hub · Card · Transition · Leaderboard · End/Awards
 const { useState: useStateVG, useEffect: useEffectVG } = React;
 
-// Top-3-Leiste: zeigt aktuelle MVPs · antippbar → Leaderboard
+// kleine Top-3-Leiste
 function V2_MvpBar({ players, scores, onOpen }) {
   const ranked = players.map(p => ({ ...p, pts: scores[p.id] || 0 }))
     .sort((a, b) => b.pts - a.pts).slice(0, 3);
@@ -29,11 +29,35 @@ function V2_MvpBar({ players, scores, onOpen }) {
   );
 }
 
+// kleine farb-Chip mit Akt + Multiplikator
+function V2_AktChip({ akt, multiplier }) {
+  const colors = { 1: V2_PALETTE.squad, 2: V2_PALETTE.match, 3: V2_PALETTE.rudel };
+  const c = colors[akt] || V2_PALETTE.ink;
+  const multTxt = multiplier === 1 ? 'NORMAL' : `× ${String(multiplier).replace('.', ',')} PUNKTE`;
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 10,
+      background: '#141417', border: `2px solid ${c}`, color: c, borderRadius: 999,
+      padding: '6px 14px', fontFamily: 'Anton, sans-serif', fontSize: 13, letterSpacing: '1px',
+      boxShadow: `0 0 14px ${c}33`,
+    }}>
+      <span>AKT {akt} · {V2_aktTitle(akt)}</span>
+      <span style={{ opacity: 0.6 }}>·</span>
+      <span style={{ color: multiplier > 1 ? V2_PALETTE.gold : c }}>{multTxt}</span>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // HUB
 // ─────────────────────────────────────────────────────────────
-function V2_HubScreen({ players, scores, round, nextType, onDraw, onLeaderboard, onQuit }) {
+function V2_HubScreen({
+  players, scores, round, totalRounds, akt, multiplier, nextType,
+  twistOn, twistEnabled, onToggleTwist, onSkipAkt,
+  onDraw, onLeaderboard, onQuit,
+}) {
   const c = V2_typeColor(nextType);
+  const remaining = Math.max(0, totalRounds - round);
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -43,13 +67,34 @@ function V2_HubScreen({ players, scores, round, nextType, onDraw, onLeaderboard,
 
       <V2_MvpBar players={players} scores={scores} onOpen={onLeaderboard} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-        <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '3px', color: V2_PALETTE.dim }}>RUNDE</div>
-        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 96, lineHeight: 0.85, color: V2_PALETTE.ink }}>{String(round + 1).padStart(2, '0')}</div>
-        <div style={{ marginTop: 14 }}>
-          <V2_TypeChip type={nextType} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '3px', color: V2_PALETTE.dim }}>
+          RUNDE {String(round + 1).padStart(2, '0')} / {totalRounds} · NOCH {remaining}
         </div>
+        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 86, lineHeight: 0.85, color: V2_PALETTE.ink }}>{String(round + 1).padStart(2, '0')}</div>
+        <V2_AktChip akt={akt} multiplier={multiplier} />
+        <div style={{ marginTop: 8 }}><V2_TypeChip type={nextType} /></div>
+
+        {akt < 3 && (
+          <button onClick={onSkipAkt} style={{
+            marginTop: 10, background: 'none', border: '1.5px dashed #2c2c33',
+            color: V2_PALETTE.dim, fontFamily: 'Anton, sans-serif', fontSize: 13,
+            letterSpacing: '1.5px', padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+          }}>→ AKT {akt + 1} STARTEN</button>
+        )}
       </div>
+
+      {twistEnabled && (
+        <button onClick={onToggleTwist} style={{
+          alignSelf: 'center', marginBottom: 10,
+          background: twistOn ? V2_PALETTE.gold : 'transparent',
+          color: twistOn ? '#0a0a0c' : V2_PALETTE.gold,
+          border: `2px solid ${V2_PALETTE.gold}`,
+          fontFamily: 'Anton, sans-serif', fontSize: 14, letterSpacing: '1.5px',
+          padding: '8px 18px', borderRadius: 999, cursor: 'pointer',
+          boxShadow: twistOn ? `0 0 14px ${V2_PALETTE.gold}66` : 'none',
+        }}>⚡ TWIST: {twistOn ? 'AN' : 'AUS'}</button>
+      )}
 
       <V2_BigButton color={c} onClick={onDraw} sub={
         nextType === 'match' ? 'PAAR WIRD AUSGELOST' :
@@ -63,13 +108,14 @@ function V2_HubScreen({ players, scores, round, nextType, onDraw, onLeaderboard,
 // ─────────────────────────────────────────────────────────────
 // SPIELKARTE
 // ─────────────────────────────────────────────────────────────
-function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard }) {
+function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onResolve, onSkipCard }) {
   const { card, group } = current;
   const accent = V2_typeColor(card.type);
-  const [phase, setPhase] = useStateVG('brief'); // brief | run | resolve
-  const [remaining, setRemaining] = useStateVG(card.timer || 0);
+  const totalTime = card.timer ? Math.max(15, Math.round((card.timer * tonePace) / 5) * 5) : 0;
+  const [phase, setPhase] = useStateVG('brief');
+  const [remaining, setRemaining] = useStateVG(totalTime);
   const [running, setRunning] = useStateVG(false);
-  const [picked, setPicked] = useStateVG([]); // ids picked in resolve
+  const [picked, setPicked] = useStateVG([]);
 
   useEffectVG(() => {
     if (phase !== 'run' || !running) return;
@@ -93,15 +139,18 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
   const toResolve = () => { setRunning(false); setPhase('resolve'); };
   const togglePick = id => setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
-  // ── Header (Akzent-Band)
+  // header
   const header = (
     <div style={{ background: accent, padding: '16px 22px 14px', position: 'relative' }}>
       <V2_HazardBar color="#0a0a0c" height={6} style={{ position: 'absolute', top: 0, left: 0, opacity: 0.22 }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
         <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 13, letterSpacing: '2px', color: accent, background: '#0a0a0c', padding: '3px 9px', borderRadius: 5 }}>
           {V2_typeTag(card.type)}
         </span>
-        <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 13, color: '#0a0a0c', opacity: 0.7 }}>#{String(card.id).padStart(2, '0')}</span>
+        {current.twisted && (
+          <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 13, letterSpacing: '2px', color: '#0a0a0c', background: V2_PALETTE.gold, padding: '3px 9px', borderRadius: 5, transform: 'rotate(-3deg)' }}>⚡ TWIST</span>
+        )}
+        <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 13, color: '#0a0a0c', opacity: 0.7, marginLeft: 'auto' }}>#{String(card.id).padStart(2, '0')}</span>
       </div>
       <h1 style={{ fontFamily: 'Anton, sans-serif', fontSize: 34, lineHeight: 0.92, color: '#0a0a0c', margin: '10px 0 0', letterSpacing: '-0.5px' }}>{card.title}</h1>
       {card.category && (
@@ -112,7 +161,7 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
     </div>
   );
 
-  // ── Wer spielt
+  // wer spielt
   let participants;
   if (card.participants === 'pair') {
     participants = (
@@ -141,7 +190,6 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
       </div>
     );
   } else {
-    // rudel — alle
     participants = (
       <div style={{ padding: '4px 22px' }}>
         <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 38, color: accent, lineHeight: 1, textShadow: `0 0 18px ${accent}66` }}>DAS GANZE RUDEL</div>
@@ -150,7 +198,7 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
     );
   }
 
-  // ── Mission + optionaler Prompt
+  // Mission + Twist + DrinkRule + Prompt
   const missionBox = (
     <div style={{ padding: '0 22px', marginTop: 10 }}>
       <p style={{ margin: 0, fontFamily: 'Archivo, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.35, color: V2_PALETTE.ink, textWrap: 'pretty' }}>{card.text}</p>
@@ -159,19 +207,38 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
           marginTop: 10, padding: '12px 14px', background: '#1a1a1f',
           borderLeft: `4px solid ${accent}`, borderRadius: 6,
           fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 16, color: V2_PALETTE.ink,
-          textWrap: 'pretty',
         }}>{card.prompt}</div>
+      )}
+      {current.twisted && card.twist && (
+        <div style={{
+          marginTop: 10, padding: '12px 14px', background: '#1a1908',
+          borderLeft: `4px solid ${V2_PALETTE.gold}`, borderRadius: 6,
+          fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 15, color: V2_PALETTE.ink,
+        }}>
+          <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 12, letterSpacing: '2px', color: V2_PALETTE.gold, marginBottom: 4 }}>⚡ TWIST</div>
+          {card.twist}
+        </div>
+      )}
+      {config.drinks && card.drinkRule && (
+        <div style={{
+          marginTop: 10, padding: '12px 14px', background: '#1a0d0d',
+          borderLeft: `4px solid ${V2_PALETTE.danger}`, borderRadius: 6,
+          fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 14, color: V2_PALETTE.ink,
+        }}>
+          <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 12, letterSpacing: '2px', color: V2_PALETTE.danger, marginBottom: 4 }}>🍻 DRINK-REGEL</div>
+          {card.drinkRule}
+        </div>
       )}
     </div>
   );
 
-  // ── Aktionsbereich
+  // Aktionsbereich
   let action;
   if (phase === 'brief') {
     action = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {card.timer ? (
-          <V2_BigButton color={accent} onClick={startTimer} sub={`${card.timer} SEKUNDEN`}>TIMER STARTEN ▶</V2_BigButton>
+          <V2_BigButton color={accent} onClick={startTimer} sub={`${totalTime} SEKUNDEN`}>TIMER STARTEN ▶</V2_BigButton>
         ) : (
           <V2_BigButton color={accent} onClick={() => setPhase('resolve')} sub="KEIN TIMER">WEITER →</V2_BigButton>
         )}
@@ -186,7 +253,6 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
       </div>
     );
   } else if (card.resolve === 'discuss') {
-    // Hot Take / Kennenlernen / Chaos → keine Punkte, nur weiter.
     const sub = card.category && card.category.includes('HOT TAKE') ? 'KEINE PUNKTE · NUR DISKUSSION'
               : card.category && card.category.includes('KENNENLERNEN') ? 'KEINE PUNKTE · EINFACH REDEN'
               : 'KEINE PUNKTE · EINFACH WEITER';
@@ -209,12 +275,11 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
       </div>
     );
   } else if (card.resolve === 'pick_from_all') {
-    const allPlayers = players;
     action = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 22, color: V2_PALETTE.ink }}>AUF WEN ZEIGT DAS RUDEL?</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxHeight: 220, overflowY: 'auto' }}>
-          {allPlayers.map(p => (
+          {players.map(p => (
             <V2_PlayerChip key={p.id} name={p.name} accent={accent}
               picked={picked.includes(p.id)} onClick={() => togglePick(p.id)} />
           ))}
@@ -230,7 +295,6 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
       </div>
     );
   } else {
-    // success
     const subText = card.participants === 'pair' ? `JE +${V2_POINTS.success} FÜRS PAAR` :
                     card.participants === 'squad' ? `JE +${V2_POINTS.success} FÜRS SQUAD` :
                     `JE +${V2_POINTS.success} FÜRS RUDEL`;
@@ -256,7 +320,7 @@ function V2_CardScreen({ current, players, scores, nameOf, onResolve, onSkipCard
         </div>
         {showTimer && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-            <V2_TimerRing total={card.timer} remaining={remaining} color={accent} paused={!running && phase === 'run'} />
+            <V2_TimerRing total={totalTime} remaining={remaining} color={accent} paused={!running && phase === 'run'} />
           </div>
         )}
       </div>
@@ -273,7 +337,50 @@ const V2_voteBtn = accent => ({
 });
 
 // ─────────────────────────────────────────────────────────────
-// LEADERBOARD — MVP-Ranking
+// TRANSITION — zwischen Akten
+// ─────────────────────────────────────────────────────────────
+function V2_TransitionScreen({ akt, players, scores, multiplier, onContinue }) {
+  const colors = { 1: V2_PALETTE.squad, 2: V2_PALETTE.match, 3: V2_PALETTE.rudel };
+  const c = colors[akt] || V2_PALETTE.ink;
+  const leader = players.map(p => ({ ...p, pts: scores[p.id] || 0 })).sort((a, b) => b.pts - a.pts)[0];
+  const desc = {
+    2: 'Punkte werden teurer. Wer hinten liegt, kann jetzt aufholen.',
+    3: 'Letzter Akt. Rudel-Challenges, große Punkte. Jeder ist noch im Rennen.',
+  }[akt] || '';
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px', position: 'relative', overflow: 'hidden' }}>
+      <V2_HazardBar color={c} style={{ position: 'absolute', top: 0, left: 0 }} />
+      <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+        <V2_Sticker color={c} rotate={-3}>NEU</V2_Sticker>
+        <V2_Sticker color={V2_PALETTE.gold} rotate={2}>× {String(multiplier).replace('.', ',')} PUNKTE</V2_Sticker>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
+        <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '3px', color: V2_PALETTE.dim }}>AKT {akt} VON 3</div>
+        <div style={{
+          fontFamily: 'Anton, sans-serif', fontSize: 80, lineHeight: 0.85, color: V2_PALETTE.ink,
+          letterSpacing: '-1px', transform: 'rotate(-1.5deg)',
+          textShadow: `5px 5px 0 ${c}, 10px 10px 0 ${V2_PALETTE.gold}`,
+        }}>{V2_aktTitle(akt)}</div>
+        <p style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.4, color: V2_PALETTE.ink, margin: 0, maxWidth: 320 }}>
+          {desc}
+        </p>
+        {leader && leader.pts > 0 && (
+          <div style={{ marginTop: 4, padding: '14px 16px', background: '#141417', border: '1px solid #232329', borderRadius: 14 }}>
+            <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 11, letterSpacing: '2px', color: V2_PALETTE.dim }}>AKTUELL VORN</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 4 }}>
+              <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 28, color: V2_PALETTE.gold }}>{leader.name}</span>
+              <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 28, color: V2_PALETTE.ink }}>{leader.pts}</span>
+            </div>
+          </div>
+        )}
+      </div>
+      <V2_BigButton color={c} onClick={onContinue} sub={`AKT ${akt} STARTEN`}>WEITER →</V2_BigButton>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// LEADERBOARD (live, jederzeit erreichbar)
 // ─────────────────────────────────────────────────────────────
 function V2_LeaderboardScreen({ players, scores, round, onBack }) {
   const ranked = players.map(p => ({ ...p, pts: scores[p.id] || 0 }))
@@ -281,13 +388,11 @@ function V2_LeaderboardScreen({ players, scores, round, onBack }) {
   const top = ranked[0];
   const rest = ranked.slice(1);
   const medals = ['🥇', '🥈', '🥉'];
-
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
       <button onClick={onBack} style={V2_backBtn}>← ZURÜCK</button>
-      <h1 style={{ ...V2_h1, fontSize: 44 }}>RUDEL<br/>MVP</h1>
+      <h1 style={{ ...V2_h1, fontSize: 44 }}>PUNKTE<br/>STAND</h1>
       <div style={{ ...V2_sub, marginBottom: 18 }}>Nach {round} {round === 1 ? 'Runde' : 'Runden'}</div>
-
       {top && (
         <div style={{
           background: V2_PALETTE.gold, color: '#0a0a0c', borderRadius: 20,
@@ -296,13 +401,12 @@ function V2_LeaderboardScreen({ players, scores, round, onBack }) {
         }}>
           <span style={{ fontSize: 42 }}>👑</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 10, letterSpacing: '2px', opacity: 0.7 }}>MVP</div>
+            <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 10, letterSpacing: '2px', opacity: 0.7 }}>VORN</div>
             <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 34, lineHeight: 1, marginTop: 2, wordBreak: 'break-word' }}>{top.name}</div>
           </div>
           <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 56, lineHeight: 0.85 }}>{top.pts}</div>
         </div>
       )}
-
       <div style={{ flex: 1, overflowY: 'auto', marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
         {rest.map((p, i) => (
           <div key={p.id} style={{
@@ -318,7 +422,6 @@ function V2_LeaderboardScreen({ players, scores, round, onBack }) {
           </div>
         ))}
       </div>
-
       <div style={{ marginTop: 14 }}>
         <V2_BigButton color={V2_PALETTE.match} onClick={onBack} sub="ZURÜCK INS SPIEL">WEITER ZOCKEN</V2_BigButton>
       </div>
@@ -326,4 +429,100 @@ function V2_LeaderboardScreen({ players, scores, round, onBack }) {
   );
 }
 
-Object.assign(window, { V2_HubScreen, V2_CardScreen, V2_LeaderboardScreen });
+// ─────────────────────────────────────────────────────────────
+// END — 5 RUDEL-AWARDS
+// ─────────────────────────────────────────────────────────────
+function V2_distinctPartners(playerId, history) {
+  const set = new Set();
+  history.forEach(k => {
+    const [a, b] = k.split('|').map(Number);
+    if (a === playerId) set.add(b);
+    else if (b === playerId) set.add(a);
+  });
+  return set.size;
+}
+
+function V2_pickTop(players, getValue) {
+  if (!players.length) return null;
+  const ranked = players.map(p => ({ ...p, val: getValue(p) }))
+    .sort((a, b) => b.val - a.val || a.name.localeCompare(b.name));
+  return ranked[0];
+}
+
+function V2_AwardCard({ icon, title, subtitle, color, winner }) {
+  if (!winner) return null;
+  return (
+    <div style={{
+      background: '#141417', border: `1.5px solid ${color}`, borderRadius: 14,
+      padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+      boxShadow: `0 0 18px ${color}22`,
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 12, background: color,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
+        boxShadow: `0 3px 0 ${V2_shade(color)}`,
+      }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 14, letterSpacing: '1.5px', color: color }}>{title}</div>
+        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 22, lineHeight: 1.05, color: V2_PALETTE.ink, wordBreak: 'break-word' }}>{winner.name}</div>
+        <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '1px', color: V2_PALETTE.dim }}>{subtitle(winner)}</div>
+      </div>
+    </div>
+  );
+}
+
+function V2_EndScreen({ players, scores, stats, history, round, onRestartSameCrew, onNewCrew }) {
+  const enriched = players.map(p => ({
+    ...p,
+    pts: scores[p.id] || 0,
+    voteWins: (stats[p.id] || {}).voteWins || 0,
+    pickReceived: (stats[p.id] || {}).pickReceived || 0,
+    chaosCount: (stats[p.id] || {}).chaosCount || 0,
+    partners: V2_distinctPartners(p.id, history),
+  }));
+
+  const mvp = V2_pickTop(enriched, p => p.pts);
+  const bruecke = V2_pickTop(enriched, p => p.partners);
+  const showStar = V2_pickTop(enriched, p => p.voteWins);
+  const herz = V2_pickTop(enriched, p => p.pickReceived);
+  const chaos = V2_pickTop(enriched, p => p.chaosCount);
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 32px', position: 'relative', overflow: 'hidden' }}>
+      <V2_HazardBar color={V2_PALETTE.gold} style={{ position: 'absolute', top: 0, left: 0 }} />
+      <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <V2_Sticker color={V2_PALETTE.gold} rotate={-3}>RUDEL DURCHGESPIELT</V2_Sticker>
+        <V2_Sticker color={V2_PALETTE.squad} rotate={2}>{round} RUNDEN</V2_Sticker>
+      </div>
+
+      <h1 style={{
+        marginTop: 14, fontFamily: 'Anton, sans-serif', fontSize: 58, lineHeight: 0.85,
+        color: V2_PALETTE.ink, letterSpacing: '-1px', transform: 'rotate(-1.5deg)',
+        textShadow: `4px 4px 0 ${V2_PALETTE.match}, 8px 8px 0 ${V2_PALETTE.squad}`,
+      }}>RUDEL<br/>AWARDS</h1>
+
+      <div style={{ flex: 1, overflowY: 'auto', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <V2_AwardCard icon="👑" color={V2_PALETTE.gold} title="MVP" winner={mvp}
+          subtitle={w => `${w.pts} Punkte`} />
+        <V2_AwardCard icon="🤝" color={V2_PALETTE.squad} title="BRÜCKENBAUER:IN" winner={bruecke}
+          subtitle={w => `${w.partners} verschiedene Kontakte`} />
+        <V2_AwardCard icon="🎭" color={V2_PALETTE.match} title="SHOW-STAR" winner={showStar}
+          subtitle={w => `${w.voteWins} Abstimmungen gewonnen`} />
+        <V2_AwardCard icon="🫂" color={V2_PALETTE.rudel} title="HERZENSMENSCH" winner={herz}
+          subtitle={w => `${w.pickReceived}× gewählt vom Rudel`} />
+        <V2_AwardCard icon="🎲" color={V2_PALETTE.danger} title="CHAOS-MAGNET" winner={chaos}
+          subtitle={w => `${w.chaosCount} Chaos-Momente`} />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
+        <V2_BigButton color={V2_PALETTE.rudel} onClick={onRestartSameCrew} sub="GLEICHE LEUTE · NEUE KARTEN">NOCHMAL!</V2_BigButton>
+        <V2_BigButton color={V2_PALETTE.match} onClick={onNewCrew} sub="ZURÜCK ZUM SETUP" ghost>NEUE LEUTE</V2_BigButton>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {
+  V2_HubScreen, V2_CardScreen, V2_TransitionScreen,
+  V2_LeaderboardScreen, V2_EndScreen,
+});

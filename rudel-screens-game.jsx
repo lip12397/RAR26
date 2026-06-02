@@ -63,7 +63,7 @@ function HubScreen({ scores, round, nextType, onDraw, onScore, onQuit }) {
 // ─────────────────────────────────────────────────────────────
 // SPIELKARTE — Vollbild, Timer, ein Hauptbutton
 // ─────────────────────────────────────────────────────────────
-function CardScreen({ current, nameOf, teamOfId, onResolve, onSkipCard }) {
+function CardScreen({ current, drinks, nameOf, teamOfId, onResolve, onSkipCard }) {
   const { card, group, actingTeam, guessTeam } = current;
   const isMatch = card.type === 'match';
   const accent = isMatch ? PALETTE.match : PALETTE.bluff;
@@ -134,9 +134,21 @@ function CardScreen({ current, nameOf, teamOfId, onResolve, onSkipCard }) {
   );
 
   const mission = (
-    <p style={{ padding: '0 22px', margin: '10px 0 0', fontFamily: 'Archivo, sans-serif', fontWeight: 600, fontSize: 17, lineHeight: 1.35, color: PALETTE.ink, textWrap: 'pretty' }}>
-      {card.text}
-    </p>
+    <div style={{ padding: '0 22px', marginTop: 10 }}>
+      <p style={{ margin: 0, fontFamily: 'Archivo, sans-serif', fontWeight: 600, fontSize: 17, lineHeight: 1.35, color: PALETTE.ink, textWrap: 'pretty' }}>
+        {card.text}
+      </p>
+      {drinks && card.drinkRule && (
+        <div style={{
+          marginTop: 10, padding: '12px 14px', background: '#1a0d0d',
+          borderLeft: `4px solid ${PALETTE.danger}`, borderRadius: 6,
+          fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 14, color: PALETTE.ink,
+        }}>
+          <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 12, letterSpacing: '2px', color: PALETTE.danger, marginBottom: 4 }}>🍻 DRINK-REGEL</div>
+          {card.drinkRule}
+        </div>
+      )}
+    </div>
   );
 
   // ── Aktionsbereich je Phase ──

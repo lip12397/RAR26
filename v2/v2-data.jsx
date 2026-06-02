@@ -20,13 +20,16 @@ const V2_POINTS = { success: 2, vote: 3, pick: 2 };
 const V2_CARDS = [
   // ─── MATCH & MISSION · 2 Personen ───
   { id: 1,  type: 'match', participants: 'pair', title: 'GEHEIM-HANDSHAKE',
-    text: 'Erfindet einen Handshake mit mind. 4 Moves. Dann der Gruppe vorführen.', timer: 60, resolve: 'success' },
+    text: 'Erfindet einen Handshake mit mind. 4 Moves. Dann der Gruppe vorführen.', timer: 60, resolve: 'success',
+    twist: 'Mit verbundenen Augen – beide Augen zu.' },
   { id: 2,  type: 'match', participants: 'pair', title: '5 GEMEINSAMKEITEN',
-    text: 'Findet 5 Gemeinsamkeiten. Nichts Offensichtliches – „beide hier" zählt nicht.', timer: 60, resolve: 'success' },
+    text: 'Findet 5 Gemeinsamkeiten. Nichts Offensichtliches – „beide hier" zählt nicht.', timer: 60, resolve: 'success',
+    twist: 'Ohne reden – nur Gesten, Mimik, oder aufs Handy malen.' },
   { id: 3,  type: 'match', participants: 'pair', title: 'FREMDE FRAGEN', category: '🫂 KENNENLERNEN',
     text: 'Stellt euch je 3 Fragen, die ihr sonst niemandem stellen würdet. Keine Wertung – nur ehrlich antworten.', timer: 90, resolve: 'discuss' },
   { id: 4,  type: 'match', participants: 'pair', title: 'LIP-SYNC BATTLE',
-    text: 'Performt gemeinsam den nächsten Song aus der Box. Volle Show.', timer: 90, resolve: 'success' },
+    text: 'Performt gemeinsam den nächsten Song aus der Box. Volle Show.', timer: 90, resolve: 'success',
+    twist: 'Komplett in Zeitlupe – Slow-Motion.' },
   { id: 5,  type: 'match', participants: 'pair', title: 'LACHEN VERBOTEN',
     text: 'Eine:r sitzt im Campingstuhl. Die/der andere bringt sie/ihn zum Lachen – ohne anfassen.', timer: 60, resolve: 'success' },
   { id: 6,  type: 'match', participants: 'pair', title: 'PEINLICHKEITS-DUELL',
@@ -38,7 +41,8 @@ const V2_CARDS = [
   { id: 9,  type: 'match', participants: 'pair', title: 'FAKE-BIOGRAFIE',
     text: 'Eine:r erzählt 60 Sek. die erfundene Lebensgeschichte der/des anderen. Je absurder, desto besser.', timer: 60, resolve: 'success' },
   { id: 10, type: 'match', participants: 'pair', title: 'BLIND BUILDER',
-    text: 'Eine:r beschreibt blind ein Foto vom Handy. Die/der andere baut es mit Bechern & Stöcken nach.', timer: 90, resolve: 'success' },
+    text: 'Eine:r beschreibt blind ein Foto vom Handy. Die/der andere baut es mit Bechern & Stöcken nach.', timer: 90, resolve: 'success',
+    twist: 'Beide blind – beide Augen zu.' },
 
   // ─── SQUAD MISSIONS · 3–4 Personen ───
   { id: 11, type: 'squad', participants: 'squad', title: 'KULT GRÜNDEN',
@@ -144,11 +148,13 @@ const V2_CARDS = [
 
   // ─── ERWEITERUNG · zusätzliche coole Karten ───
   { id: 29, type: 'match', participants: 'pair', title: 'SUPERHELDEN-DUO',
-    text: 'Erfindet zusammen ein Superhelden-Duo: Namen, Superkraft, Schwäche. 30-Sek-Vorstellung.', timer: 75, resolve: 'success' },
+    text: 'Erfindet zusammen ein Superhelden-Duo: Namen, Superkraft, Schwäche. 30-Sek-Vorstellung.', timer: 75, resolve: 'success',
+    twist: 'Alles muss sich reimen.' },
   { id: 30, type: 'match', participants: 'pair', title: 'BLIND-PORTRAIT',
     text: 'Eine:r malt das Gesicht der anderen Person mit geschlossenen Augen. Rudel rät, wer es ist.', timer: 60, resolve: 'success' },
   { id: 31, type: 'match', participants: 'pair', title: 'BANDNAMEN-FABRIK',
-    text: 'Erfindet zusammen 5 absurde Bandnamen plus Genre. Das Rudel ruft den besten.', timer: 60, resolve: 'success' },
+    text: 'Erfindet zusammen 5 absurde Bandnamen plus Genre. Das Rudel ruft den besten.', timer: 60, resolve: 'success',
+    twist: 'Alle 5 Namen müssen mit demselben Buchstaben starten.' },
   { id: 32, type: 'match', participants: 'pair', title: 'SONG-EMOJIS',
     text: 'Eine:r tippt einen Songtitel nur mit Emojis ins Handy und hält es hoch. Die/der andere rät.', timer: 60, resolve: 'success' },
   { id: 33, type: 'match', participants: 'pair', title: 'DREI KLEINE DINGE', category: '🫂 KENNENLERNEN',
@@ -159,12 +165,15 @@ const V2_CARDS = [
   { id: 35, type: 'squad', participants: 'squad', title: 'GEHEIM-ZEICHEN',
     text: 'Erfindet ein 3-teiliges Geheimzeichen für euer Squad. Müsst es heute Abend noch 3× spontan ausführen.', timer: 90, resolve: 'success' },
   { id: 36, type: 'squad', participants: 'squad', title: 'TANZ-TUTORIAL',
-    text: 'Bringt dem Rudel einen 4-Schritte-Move bei. Alle machen mit, sonst zählts nicht.', timer: 120, resolve: 'success' },
+    text: 'Bringt dem Rudel einen 4-Schritte-Move bei. Alle machen mit, sonst zählts nicht.', timer: 120, resolve: 'success',
+    twist: 'Alle Moves rückwärts.' },
 
   { id: 37, type: 'rudel', participants: 'all', title: 'PANTOMIME-KETTE',
-    text: 'Stille Post als Pantomime: erste Person sieht den Begriff, gibt ihn lautlos weiter. Letzte rät.', timer: 120, resolve: 'success' },
+    text: 'Stille Post als Pantomime: erste Person sieht den Begriff, gibt ihn lautlos weiter. Letzte rät.', timer: 120, resolve: 'success',
+    twist: 'Ohne Hände – nur Körper, Füße, Mimik.' },
   { id: 38, type: 'rudel', participants: 'all', title: 'WORT-KETTE',
-    text: 'Eine Story – Wort für Wort. Reihum, jede:r sagt EIN Wort. Wer abbricht oder stockt: trinkt.', timer: 90, resolve: 'success' },
+    text: 'Eine Story – Wort für Wort. Reihum, jede:r sagt EIN Wort. Wer abbricht oder stockt, scheidet aus dieser Runde aus.', timer: 90, resolve: 'success',
+    drinkRule: 'Wer abbricht oder stockt: trinkt einen Schluck.' },
   { id: 39, type: 'rudel', participants: 'all', title: 'DREI ECKEN', category: '💬 HOT TAKE',
     text: 'Drei Ecken: Ja / Nein / Vielleicht. App stellt die Frage, alle stellen sich hin. Kurz reden, dann weiter.', timer: 45, resolve: 'discuss',
     prompts: [
@@ -181,7 +190,8 @@ const V2_CARDS = [
   { id: 40, type: 'match', participants: 'pair', title: 'RÜCKEN-AN-RÜCKEN',
     text: 'Rücken an Rücken auf den Boden, Arme einhaken. Zusammen aufstehen – ohne Hände abzustützen.', timer: 60, resolve: 'success' },
   { id: 41, type: 'match', participants: 'pair', title: 'STATUEN-SPIEGEL',
-    text: 'Eine:r bewegt sich in Slow-Mo, die/der andere spiegelt exakt. Rudel rät, wer führt.', timer: 60, resolve: 'success' },
+    text: 'Eine:r bewegt sich in Slow-Mo, die/der andere spiegelt exakt. Rudel rät, wer führt.', timer: 60, resolve: 'success',
+    twist: 'Rollen wechseln alle 10 Sekunden – ohne Pause.' },
 
   { id: 42, type: 'squad', participants: 'squad', title: 'LUFT-VOLLEYBALL',
     text: 'Haltet einen aufgeblasenen Beutel oder leichten Becher in der Luft. Nur Kopf, Ellbogen, Knie – Hände verboten.', timer: 60, resolve: 'success' },
@@ -191,11 +201,21 @@ const V2_CARDS = [
     text: 'Erfindet einen 10-Sekunden-Move im Sync. Alle dasselbe gleichzeitig. Performt vor dem Rudel.', timer: 90, resolve: 'success' },
 
   { id: 45, type: 'rudel', participants: 'all', title: 'LA OLA',
-    text: 'Eine saubere La Ola im Kreis – sitzend oder stehend, im Takt. 3 Versuche, dann zählt sie.', timer: 45, resolve: 'success' },
+    text: 'Eine saubere La Ola im Kreis – sitzend oder stehend, im Takt. 3 Versuche, dann zählt sie.', timer: 45, resolve: 'success',
+    twist: 'Rückwärts durch den Kreis.' },
   { id: 46, type: 'rudel', participants: 'all', title: 'FREEZE-POSE',
     text: 'Auf „GO" tanzen alle wild. Auf „STOPP" friert jede:r in einer Pose ein. Spielleitung tippt die lustigste Pose an.', timer: 30, resolve: 'pick_from_all' },
   { id: 47, type: 'rudel', participants: 'all', title: 'TOTALE STILLE', category: '🎲 CHAOS',
-    text: '30 Sekunden komplette Stille und Stillstand. Wer zuckt, lacht oder redet: trinkt. Keine Punkte, nur ein Moment.', timer: 30, resolve: 'discuss' },
+    text: '30 Sekunden komplette Stille und Stillstand. Wer zuckt, lacht oder redet, scheidet aus. Keine Punkte, nur ein Moment.', timer: 30, resolve: 'discuss',
+    drinkRule: 'Wer zuckt, lacht oder redet: trinkt einen Schluck.' },
+
+  // ─── DRINK-ONLY · nur im „mit Trinken"-Modus ───
+  { id: 48, type: 'rudel', participants: 'all', title: 'BECHER-ROULETTE', drinksRequired: true,
+    text: '4 Becher vorbereiten: 3× normales Getränk, 1× Shot. 4 Personen trinken mit Pokerface – Rudel rät, wer den Shot hatte.', timer: 60, resolve: 'pick_from_all' },
+  { id: 49, type: 'rudel', participants: 'all', title: 'PROST-SPRACHEN', drinksRequired: true,
+    text: 'Reihum prosten – jede:r in einer anderen Sprache. Wer wiederholt oder stockt: trinkt.', timer: 60, resolve: 'success' },
+  { id: 50, type: 'match', participants: 'pair', title: 'KING\'S CUP DUELL', drinksRequired: true,
+    text: 'Eine:r nennt eine Regel („wer ‚ich\' sagt, trinkt"), die andere eine zweite. Beide Regeln gelten bis zur nächsten Match-Karte.', timer: 45, resolve: 'success' },
 ];
 
 Object.assign(window, { V2_THEME, V2_POINTS, V2_CARDS });

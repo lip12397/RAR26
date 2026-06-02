@@ -49,7 +49,7 @@ function StartScreen({ onStart, hasGame, onContinue }) {
 // ─────────────────────────────────────────────────────────────
 // SETUP — Namen eintippen + Teams auslosen (anpassbar)
 // ─────────────────────────────────────────────────────────────
-function SetupScreen({ players, setPlayers, teams, setTeams, onBack, onStartGame }) {
+function SetupScreen({ players, setPlayers, teams, setTeams, drinks, setDrinks, onBack, onStartGame }) {
   const [phase, setPhase] = useStateS('names'); // 'names' | 'teams'
   const [val, setVal] = useStateS('');
   const inputRef = useRefS(null);
@@ -154,6 +154,23 @@ function SetupScreen({ players, setPlayers, teams, setTeams, onBack, onStartGame
         {col('B')}
       </div>
       <div style={{ padding: '10px 22px 36px', display: 'flex', flexDirection: 'column', gap: 12, background: 'linear-gradient(transparent, #0a0a0c 30%)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 12, letterSpacing: '2px', color: PALETTE.dim }}>DRINKS:</span>
+          <button onClick={() => setDrinks(false)} style={{
+            background: !drinks ? PALETTE.bluff : 'transparent',
+            color: !drinks ? '#0a0a0c' : PALETTE.dim,
+            border: `2px solid ${!drinks ? PALETTE.bluff : '#2c2c33'}`,
+            fontFamily: 'Anton, sans-serif', fontSize: 13, letterSpacing: '1px',
+            padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
+          }}>💧 OHNE</button>
+          <button onClick={() => setDrinks(true)} style={{
+            background: drinks ? PALETTE.B : 'transparent',
+            color: drinks ? '#0a0a0c' : PALETTE.dim,
+            border: `2px solid ${drinks ? PALETTE.B : '#2c2c33'}`,
+            fontFamily: 'Anton, sans-serif', fontSize: 13, letterSpacing: '1px',
+            padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
+          }}>🍻 MIT</button>
+        </div>
         <button onClick={rollTeams} style={reshuffleBtn}>↻ NEU MISCHEN</button>
         <BigButton color={PALETTE.match} onClick={onStartGame} sub="ERSTE KARTE ZIEHEN">SPIEL STARTEN</BigButton>
       </div>

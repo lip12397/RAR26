@@ -8,6 +8,7 @@ const INITIAL = {
   scores: { A: 0, B: 0 },
   history: [], usedCards: [], activeCount: {},
   round: 0, nextType: 'match', bluffCount: 0, current: null,
+  drinks: false,
 };
 
 function loadState() {
@@ -40,6 +41,7 @@ function App() {
   const quit = () => patch({ screen: 'start' });
   const setPlayers = players => patch({ players });
   const setTeams = teams => patch({ teams });
+  const setDrinks = drinks => patch({ drinks });
 
   const startGame = () => patch({
     started: true, screen: 'hub', scores: { A: 0, B: 0 },
@@ -50,9 +52,9 @@ function App() {
   // ── Karte ziehen ──
   const draw = () => setG(prev => {
     const type = prev.nextType;
-    const card = drawCard(RUDEL_CARDS, type, prev.usedCards);
+    const card = drawCard(RUDEL_CARDS, type, prev.usedCards, prev.drinks);
     if (!card) {
-      // Alle 20 Karten durch → End-Screen
+      // Alle Karten durch → End-Screen
       return { ...prev, current: null, screen: 'end' };
     }
     let group = [], actingTeam = null, guessTeam = null;
@@ -89,9 +91,10 @@ function App() {
   };
   const flashDone = () => {
     setFlash(null);
-    // Wenn nach dieser Runde keine frischen Karten mehr da sind → End-Screen
     setG(prev => {
-      const remaining = RUDEL_CARDS.filter(c => !prev.usedCards.includes(c.id)).length;
+      const remaining = RUDEL_CARDS.filter(c =>
+        !prev.usedCards.includes(c.id) && (prev.drinks || !c.drinksRequired)
+      ).length;
       return { ...prev, current: null, screen: remaining === 0 ? 'end' : 'hub' };
     });
   };
@@ -109,9 +112,9 @@ function App() {
   if (G.screen === 'start') {
     screen = <StartScreen onStart={G.started ? newGame : goSetup} hasGame={G.started} onContinue={continueGame} />;
   } else if (G.screen === 'setup') {
-    screen = <SetupScreen players={G.players} setPlayers={setPlayers} teams={G.teams} setTeams={setTeams} onBack={quit} onStartGame={startGame} />;
+    screen = <SetupScreen players={G.players} setPlayers={setPlayers} teams={G.teams} setTeams={setTeams} drinks={G.drinks} setDrinks={setDrinks} onBack={quit} onStartGame={startGame} />;
   } else if (G.screen === 'card' && G.current) {
-    screen = <CardScreen key={G.round + '-' + G.current.card.id} current={G.current} nameOf={nameOf} teamOfId={teamOfId} onResolve={resolve} onSkipCard={skipCard} />;
+    screen = <CardScreen key={G.round + '-' + G.current.card.id} current={G.current} drinks={G.drinks} nameOf={nameOf} teamOfId={teamOfId} onResolve={resolve} onSkipCard={skipCard} />;
   } else if (G.screen === 'score') {
     screen = <ScoreScreen scores={G.scores} round={G.round} onBack={continueGame} onNext={() => { patch({ screen: 'hub' }); }} />;
   } else if (G.screen === 'end') {

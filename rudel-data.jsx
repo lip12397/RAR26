@@ -16,7 +16,8 @@ const RUDEL_CARDS = [
   { id: 1,  type: 'match', title: 'GEHEIM-HANDSHAKE', tag: 'PAAR',
     text: 'Erfindet zusammen einen Handshake mit mind. 4 Moves. Dann der Gruppe vorführen.', timer: 60 },
   { id: 2,  type: 'match', title: 'DAUER-KOMPLIMENTE', tag: 'PAAR',
-    text: 'Eine:r macht 60 Sek. nonstop Komplimente. Stocken = beide trinken.', timer: 60 },
+    text: 'Eine:r macht 60 Sek. nonstop Komplimente. Stocken nicht!', timer: 60,
+    drinkRule: 'Stocken = beide trinken einen Schluck.' },
   { id: 3,  type: 'match', title: 'PEINLICHKEITS-DUELL', tag: 'PAAR',
     text: 'Erzählt eure peinlichste Auto-Korrektur oder Google-Suche. Die Gruppe wählt die bessere.', timer: 90 },
   { id: 4,  type: 'match', title: 'BRING MICH ZUM LACHEN', tag: 'PAAR',
@@ -39,8 +40,8 @@ const RUDEL_CARDS = [
     text: 'Mixt aus allem, was da ist, einen Drink für die Gruppe. Alle probieren, Gruppe bewertet.', timer: 120 },
 
   // ─── TEAM-BLUFF-CHALLENGES (Team gegen Team) ───
-  { id: 13, type: 'bluff', title: 'WASSER-ROULETTE', tag: 'BLUFF',
-    text: 'Füllt 4 Becher: 3× Wasser, 1× Wodka. Vier trinken mit Pokerface. Das Gegner-Team rät, wer den Schnaps hatte.', timer: 60 },
+  { id: 13, type: 'bluff', title: 'BECHER-ROULETTE', tag: 'BLUFF', drinksRequired: true,
+    text: 'Füllt 4 Becher: 3× normales Getränk, 1× Shot. Vier trinken mit Pokerface. Das Gegner-Team rät, wer den Shot hatte.', timer: 60 },
   { id: 14, type: 'bluff', title: '2 WAHRHEITEN, 1 LÜGE', tag: 'BLUFF',
     text: 'Eine:r nennt 3 Aussagen über sich. Das Gegner-Team berät und tippt auf die Lüge.', timer: 45 },
   { id: 15, type: 'bluff', title: 'DER MAULWURF', tag: 'BLUFF',

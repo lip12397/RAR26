@@ -75,9 +75,12 @@ function pickGroup(players, teams, history, activeCount, allowTrio) {
 
 // Nächste Karte ziehen. Bevorzugt den angefragten Typ. Wenn der ausgeht,
 // wechselt zum anderen Typ. Sind ALLE Karten durch, return null → Game Over.
-function drawCard(cards, preferredType, usedIds) {
+// drinks=false filtert Karten mit drinksRequired raus.
+function drawCard(cards, preferredType, usedIds, drinks = true) {
   const otherType = preferredType === 'match' ? 'bluff' : 'match';
-  const freshOf = type => cards.filter(c => c.type === type && !usedIds.includes(c.id));
+  const freshOf = type => cards.filter(c =>
+    c.type === type && !usedIds.includes(c.id) && (drinks || !c.drinksRequired)
+  );
   let pool = freshOf(preferredType);
   if (!pool.length) pool = freshOf(otherType);
   if (!pool.length) return null; // alle Karten durch

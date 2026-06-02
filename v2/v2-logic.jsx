@@ -74,6 +74,50 @@ function V2_nextType(lastType) {
   return V2_shuffle(use)[0];
 }
 
+// ─── AKTE / LÄNGE / TONALITÄT ───────────────────────────────
+// Spiellänge: KURZ (~12), MITTEL (~24), LANG (~36). Endlos = alle.
+const V2_LENGTH_CONFIG = {
+  short:  { totalRounds: 12, aktThresholds: [4, 8, 12],  label: 'KURZ',  estMin: '20 MIN' },
+  medium: { totalRounds: 24, aktThresholds: [8, 16, 24], label: 'MITTEL', estMin: '45 MIN' },
+  long:   { totalRounds: 36, aktThresholds: [12, 24, 36], label: 'LANG', estMin: '75 MIN' },
+};
+// In welchem Akt ist die nächste Runde? (round = abgeschlossene Runden)
+function V2_aktOf(round, thresholds) {
+  if (round < thresholds[0]) return 1;
+  if (round < thresholds[1]) return 2;
+  return 3;
+}
+const V2_aktTitle = a => ({ 1: 'KENNENLERNEN', 2: 'ENTFALTUNG', 3: 'RUDEL' }[a] || 'AKT');
+const V2_aktMultiplier = a => ({ 1: 1, 2: 1.5, 3: 2 }[a] || 1);
+
+// Typ-Gewichtung pro Akt (mehr Variation als die globale 40/30/30)
+const V2_aktTypeWeights = {
+  1: { match: 5, squad: 1, rudel: 2 }, // Kennenlernen: Match dominant
+  2: { match: 3, squad: 3, rudel: 2 }, // Entfaltung: ausgeglichen, Squad rein
+  3: { match: 2, squad: 2, rudel: 4 }, // Rudel: Climax mit Rudel-Challenges
+};
+function V2_nextTypeForAkt(akt, lastType) {
+  const weights = V2_aktTypeWeights[akt] || V2_aktTypeWeights[1];
+  const pool = [];
+  Object.entries(weights).forEach(([t, w]) => { for (let i = 0; i < w; i++) pool.push(t); });
+  const filtered = pool.filter(t => t !== lastType);
+  const use = filtered.length ? filtered : pool;
+  return V2_shuffle(use)[0];
+}
+
+// Tonalitäts-Faktor für Timer (Chill = entspannter, Wild = schneller)
+const V2_tonePace = t => ({ chill: 1.4, standard: 1, wild: 0.85 }[t] || 1);
+
+// Karten-Pool nach Tonalität + Drinks filtern
+function V2_filterDeck(cards, tone, drinks) {
+  return cards.filter(c => {
+    if (c.drinksRequired && !drinks) return false;
+    // Chill: keine drinks-required Karten + keine Chaos-Kategorien
+    if (tone === 'chill' && c.category && c.category.includes('CHAOS')) return false;
+    return true;
+  });
+}
+
 // Karte ziehen — innerhalb des Typs frische zuerst, dann neu mischen.
 // Wählt zufällig einen Prompt aus, falls vorhanden.
 function V2_drawCard(cards, type, usedIds) {
@@ -96,5 +140,6 @@ function V2_recordHistory(group, history) {
 
 Object.assign(window, {
   V2_shuffle, V2_pairKey, V2_activitySum, V2_newPairs,
-  V2_pickPair, V2_pickSquad, V2_nextType, V2_drawCard, V2_recordHistory,
+  V2_pickPair, V2_pickSquad, V2_nextType, V2_nextTypeForAkt, V2_drawCard, V2_recordHistory,
+  V2_LENGTH_CONFIG, V2_aktOf, V2_aktTitle, V2_aktMultiplier, V2_tonePace, V2_filterDeck,
 });

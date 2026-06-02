@@ -49,7 +49,7 @@ function V2_StartScreen({ onStart, hasGame, onContinue }) {
   );
 }
 
-function V2_SetupScreen({ players, setPlayers, onBack, onStartGame }) {
+function V2_SetupScreen({ players, setPlayers, onBack, onContinue }) {
   const [val, setVal] = useStateVS('');
   const inputRef = useRefVS(null);
   const listRef = useRefVS(null);
@@ -101,11 +101,98 @@ function V2_SetupScreen({ players, setPlayers, onBack, onStartGame }) {
       </div>
 
       <div style={{ padding: '10px 22px 36px', background: 'linear-gradient(transparent, #0a0a0c 30%)' }}>
-        <V2_BigButton color={V2_PALETTE.match} disabled={!enough} onClick={onStartGame}
-          sub={enough ? 'ERSTE KARTE ZIEHEN' : `NOCH ${needed} ${needed === 1 ? 'PERSON' : 'LEUTE'}`}>
-          SPIEL STARTEN
+        <V2_BigButton color={V2_PALETTE.match} disabled={!enough} onClick={onContinue}
+          sub={enough ? 'EINSTELLUNGEN WÄHLEN' : `NOCH ${needed} ${needed === 1 ? 'PERSON' : 'LEUTE'}`}>
+          WEITER →
         </V2_BigButton>
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONFIG — Länge · Tonalität · Drinks · Twist
+// ─────────────────────────────────────────────────────────────
+function V2_ConfigScreen({ config, setConfig, onBack, onStartGame }) {
+  const update = patch => setConfig({ ...config, ...patch });
+
+  const Seg = ({ value, options, onChange, accent = V2_PALETTE.match }) => (
+    <div style={{ display: 'flex', gap: 8, background: '#141417', padding: 4, borderRadius: 14, border: '1px solid #232329' }}>
+      {options.map(o => {
+        const sel = value === o.value;
+        return (
+          <button key={o.value} onClick={() => onChange(o.value)} style={{
+            flex: 1, border: 'none', borderRadius: 11, padding: '12px 6px', cursor: 'pointer',
+            background: sel ? accent : 'transparent',
+            color: sel ? '#0a0a0c' : V2_PALETTE.ink,
+            fontFamily: 'Anton, sans-serif', fontSize: 16, letterSpacing: '0.5px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            boxShadow: sel ? `0 3px 0 ${V2_shade(accent)}` : 'none',
+            transition: 'all .12s',
+          }}>
+            <span>{o.label}</span>
+            {o.sub && <span style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 9, letterSpacing: '1px', opacity: sel ? 0.75 : 0.5 }}>{o.sub}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const Section = ({ label, hint, children }) => (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+        <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 18, color: V2_PALETTE.ink, letterSpacing: '0.5px' }}>{label}</span>
+        {hint && <span style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 600, fontSize: 12, color: V2_PALETTE.dim }}>{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
+      <button onClick={onBack} style={V2_backBtn}>← NAMEN</button>
+      <h1 style={V2_h1}>WIE WOLLT<br/>IHR'S?</h1>
+      <div style={{ ...V2_sub, marginBottom: 22 }}>4 Schnell-Knöpfe, dann geht's los.</div>
+
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <Section label="LÄNGE" hint="ungefähr">
+          <Seg value={config.length} accent={V2_PALETTE.match} onChange={v => update({ length: v })}
+            options={[
+              { value: 'short',  label: 'KURZ',   sub: '~20 MIN' },
+              { value: 'medium', label: 'MITTEL', sub: '~45 MIN' },
+              { value: 'long',   label: 'LANG',   sub: '~75 MIN' },
+            ]} />
+        </Section>
+
+        <Section label="TONALITÄT">
+          <Seg value={config.tone} accent={V2_PALETTE.squad} onChange={v => update({ tone: v })}
+            options={[
+              { value: 'chill',    label: '🧘 CHILL',    sub: 'REDEN' },
+              { value: 'standard', label: '🎉 STANDARD', sub: 'BALANCE' },
+              { value: 'wild',     label: '🔥 WILD',     sub: 'CHAOS' },
+            ]} />
+        </Section>
+
+        <Section label="DRINKS">
+          <Seg value={config.drinks ? 'on' : 'off'} accent={V2_PALETTE.rudel} onChange={v => update({ drinks: v === 'on' })}
+            options={[
+              { value: 'off', label: '💧 OHNE', sub: 'CLEAN' },
+              { value: 'on',  label: '🍻 MIT',  sub: 'TRINK-REGELN' },
+            ]} />
+        </Section>
+
+        <Section label="TWIST" hint="Spielleitung kann pro Karte einen Modifier anschalten">
+          <Seg value={config.twistEnabled ? 'on' : 'off'} accent={V2_PALETTE.gold} onChange={v => update({ twistEnabled: v === 'on' })}
+            options={[
+              { value: 'off', label: 'AUS' },
+              { value: 'on',  label: 'AN'  },
+            ]} />
+        </Section>
+      </div>
+
+      <V2_BigButton color={V2_PALETTE.match} onClick={onStartGame} sub="ERSTE KARTE ZIEHEN">
+        SPIEL STARTEN
+      </V2_BigButton>
     </div>
   );
 }
@@ -120,4 +207,4 @@ const V2_row = { display: 'flex', alignItems: 'center', gap: 12, background: '#1
 const V2_delBtn = { width: 38, height: 38, flexShrink: 0, background: 'none', border: '1px solid #2c2c33', borderRadius: 10, color: V2_PALETTE.dim, fontSize: 15, cursor: 'pointer' };
 const V2_skipLink = { background: 'none', border: 'none', color: V2_PALETTE.dim, fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', padding: '8px', textDecoration: 'underline', textUnderlineOffset: '3px' };
 
-Object.assign(window, { V2_StartScreen, V2_SetupScreen, V2_h1, V2_sub, V2_backBtn, V2_skipLink });
+Object.assign(window, { V2_StartScreen, V2_SetupScreen, V2_ConfigScreen, V2_h1, V2_sub, V2_backBtn, V2_skipLink });
