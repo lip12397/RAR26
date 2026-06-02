@@ -18,25 +18,7 @@ function loadState() {
   return INITIAL;
 }
 
-// Skaliert den 402×874-Rahmen mittig in jeden Viewport.
-function Stage({ children }) {
-  const [scale, setScale] = useStateA(1);
-  useEffectA(() => {
-    const fit = () => {
-      const m = 24;
-      const s = Math.min((window.innerWidth - m) / 402, (window.innerHeight - m) / 874, 1.15);
-      setScale(Math.max(0.4, s));
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
-  }, []);
-  return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-      <div style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>{children}</div>
-    </div>
-  );
-}
+
 
 function App() {
   const [G, setG] = useStateA(loadState);
@@ -119,14 +101,12 @@ function App() {
   }
 
   return (
-    <Stage>
-      <IOSDevice dark>
-        <div style={{ position: 'relative', height: '100%', background: PALETTE.bg, color: PALETTE.ink }}>
-          {screen}
-          {flash && <Flash color={flash.color} text={flash.text} onDone={flashDone} />}
-        </div>
-      </IOSDevice>
-    </Stage>
+    <div style={{ position: 'fixed', inset: 0, background: PALETTE.bg, color: PALETTE.ink, overflow: 'hidden' }}>
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        {screen}
+        {flash && <Flash color={flash.color} text={flash.text} onDone={flashDone} />}
+      </div>
+    </div>
   );
 }
 
