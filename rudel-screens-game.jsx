@@ -259,4 +259,61 @@ function ScoreScreen({ scores, round, onBack, onNext }) {
 
 const skipLink = { background: 'none', border: 'none', color: PALETTE.dim, fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', padding: '8px', textDecoration: 'underline', textUnderlineOffset: '3px' };
 
-Object.assign(window, { HubScreen, CardScreen, ScoreScreen });
+// ─────────────────────────────────────────────────────────────
+// END — alle Karten durch
+// ─────────────────────────────────────────────────────────────
+function EndScreen({ scores, round, onRestartSameCrew, onNewCrew }) {
+  const lead = scores.A === scores.B ? null : scores.A > scores.B ? 'A' : 'B';
+  const diff = Math.abs(scores.A - scores.B);
+  const winColor = lead ? teamColor(lead) : PALETTE.ink;
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px', position: 'relative', overflow: 'hidden' }}>
+      <HazardBar color={winColor} style={{ position: 'absolute', top: 0, left: 0 }} />
+
+      <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <Sticker color={PALETTE.B} rotate={-3}>RUDEL DURCHGESPIELT</Sticker>
+        <Sticker color={PALETTE.bluff} rotate={2}>{round} RUNDEN</Sticker>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14 }}>
+        <div style={{
+          fontFamily: 'Anton, sans-serif', fontSize: 64, lineHeight: 0.85, color: PALETTE.ink,
+          letterSpacing: '-1px', transform: 'rotate(-1.5deg)',
+          textShadow: `5px 5px 0 ${PALETTE.match}, 10px 10px 0 ${PALETTE.A}`,
+        }}>ALLE<br/>KARTEN<br/>DURCH.</div>
+
+        {/* Endstand */}
+        <div style={{ marginTop: 8, display: 'flex', gap: 12 }}>
+          {['A', 'B'].map(t => {
+            const win = lead === t;
+            return (
+              <div key={t} style={{
+                flex: 1, borderRadius: 18, padding: '20px 10px', textAlign: 'center',
+                background: win ? teamColor(t) : '#141417',
+                border: win ? 'none' : `2px solid ${teamColor(t)}55`,
+                boxShadow: win ? `0 0 40px ${teamColor(t)}66` : 'none',
+                transform: win ? 'scale(1.04)' : 'none',
+              }}>
+                <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 16, letterSpacing: '1px', color: win ? '#0a0a0c' : teamColor(t) }}>
+                  {win ? '★ TEAM ' : 'TEAM '}{t}
+                </div>
+                <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 80, lineHeight: 0.82, color: win ? '#0a0a0c' : PALETTE.ink, margin: '4px 0 2px' }}>{scores[t]}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ textAlign: 'center', fontFamily: 'Anton, sans-serif', fontSize: 22, color: winColor, letterSpacing: '0.5px' }}>
+          {lead ? `TEAM ${lead} GEWINNT MIT +${diff}` : 'UNENTSCHIEDEN'}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BigButton color={PALETTE.bluff} onClick={onRestartSameCrew} sub="GLEICHE LEUTE · NEUE KARTEN">NOCHMAL!</BigButton>
+        <BigButton color={PALETTE.match} onClick={onNewCrew} sub="ZURÜCK ZUM SETUP" ghost>NEUE LEUTE</BigButton>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { HubScreen, CardScreen, ScoreScreen, EndScreen });

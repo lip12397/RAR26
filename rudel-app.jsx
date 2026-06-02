@@ -51,8 +51,12 @@ function App() {
   const draw = () => setG(prev => {
     const type = prev.nextType;
     const card = drawCard(RUDEL_CARDS, type, prev.usedCards);
+    if (!card) {
+      // Alle 20 Karten durch → End-Screen
+      return { ...prev, current: null, screen: 'end' };
+    }
     let group = [], actingTeam = null, guessTeam = null;
-    if (type === 'match') {
+    if (card.type === 'match') {
       group = pickGroup(prev.players, prev.teams, new Set(prev.history), prev.activeCount, true);
     } else {
       actingTeam = prev.bluffCount % 2 === 0 ? 'A' : 'B';
@@ -83,8 +87,22 @@ function App() {
     });
     setFlash(flashObj);
   };
-  const flashDone = () => { setFlash(null); patch({ current: null, screen: 'hub' }); };
+  const flashDone = () => {
+    setFlash(null);
+    // Wenn nach dieser Runde keine frischen Karten mehr da sind → End-Screen
+    setG(prev => {
+      const remaining = RUDEL_CARDS.filter(c => !prev.usedCards.includes(c.id)).length;
+      return { ...prev, current: null, screen: remaining === 0 ? 'end' : 'hub' };
+    });
+  };
   const skipCard = () => patch({ current: null, screen: 'hub' });
+
+  // Nochmal mit gleichen Leuten: Punkte/History/Karten reset, Teams bleiben.
+  const restartSameCrew = () => patch({
+    screen: 'hub', scores: { A: 0, B: 0 },
+    history: [], usedCards: [], activeCount: {}, round: 0,
+    nextType: 'match', bluffCount: 0, current: null,
+  });
 
   // ── Render ──
   let screen;
@@ -96,6 +114,8 @@ function App() {
     screen = <CardScreen key={G.round + '-' + G.current.card.id} current={G.current} nameOf={nameOf} teamOfId={teamOfId} onResolve={resolve} onSkipCard={skipCard} />;
   } else if (G.screen === 'score') {
     screen = <ScoreScreen scores={G.scores} round={G.round} onBack={continueGame} onNext={() => { patch({ screen: 'hub' }); }} />;
+  } else if (G.screen === 'end') {
+    screen = <EndScreen scores={G.scores} round={G.round} onRestartSameCrew={restartSameCrew} onNewCrew={newGame} />;
   } else {
     screen = <HubScreen scores={G.scores} round={G.round} nextType={G.nextType} onDraw={draw} onScore={() => patch({ screen: 'score' })} onQuit={quit} />;
   }

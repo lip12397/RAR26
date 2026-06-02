@@ -1,0 +1,201 @@
+// v2-data.jsx — RUDEL v2 (MVP Edition)
+// 28 Karten: 10 Match (Paar) · 10 Squad (3–4) · 8 Rudel (alle).
+// resolve: 'success' | 'vote_in_group' | 'pick_from_all'
+//   success         → alle Teilnehmer:innen bekommen +2
+//   vote_in_group   → eine Person aus der Gruppe gewinnt Abstimmung (+3)
+//   pick_from_all   → Spielleitung tippt eine/mehrere aus dem ganzen Rudel an (+2 je)
+// prompts (optional): wird beim Ziehen zufällig gewählt, ersetzt/ergänzt text.
+
+const V2_THEME = {
+  name: 'RUDEL',
+  edition: 'MVP EDITION',
+  festival: 'ROCK AM RING',
+  year: '2026',
+  dates: '03–07 JUNI',
+  place: 'NÜRBURGRING',
+};
+
+const V2_POINTS = { success: 2, vote: 3, pick: 2 };
+
+const V2_CARDS = [
+  // ─── MATCH & MISSION · 2 Personen ───
+  { id: 1,  type: 'match', participants: 'pair', title: 'GEHEIM-HANDSHAKE',
+    text: 'Erfindet einen Handshake mit mind. 4 Moves. Dann der Gruppe vorführen.', timer: 60, resolve: 'success' },
+  { id: 2,  type: 'match', participants: 'pair', title: '5 GEMEINSAMKEITEN',
+    text: 'Findet 5 Gemeinsamkeiten. Nichts Offensichtliches – „beide hier" zählt nicht.', timer: 60, resolve: 'success' },
+  { id: 3,  type: 'match', participants: 'pair', title: 'FREMDE FRAGEN', category: '🫂 KENNENLERNEN',
+    text: 'Stellt euch je 3 Fragen, die ihr sonst niemandem stellen würdet. Keine Wertung – nur ehrlich antworten.', timer: 90, resolve: 'discuss' },
+  { id: 4,  type: 'match', participants: 'pair', title: 'LIP-SYNC BATTLE',
+    text: 'Performt gemeinsam den nächsten Song aus der Box. Volle Show.', timer: 90, resolve: 'success' },
+  { id: 5,  type: 'match', participants: 'pair', title: 'LACHEN VERBOTEN',
+    text: 'Eine:r sitzt im Campingstuhl. Die/der andere bringt sie/ihn zum Lachen – ohne anfassen.', timer: 60, resolve: 'success' },
+  { id: 6,  type: 'match', participants: 'pair', title: 'PEINLICHKEITS-DUELL',
+    text: 'Erzählt eure peinlichste Auto-Korrektur oder Google-Suche. Rudel wählt die bessere.', timer: 90, resolve: 'vote_in_group' },
+  { id: 7,  type: 'match', participants: 'pair', title: 'SIGNATURE-DRINK',
+    text: 'Mixt aus dem, was rumliegt, einen Drink. Alle probieren, Rudel bewertet.', timer: 120, resolve: 'success' },
+  { id: 8,  type: 'match', participants: 'pair', title: 'KLAMOTTEN-TAUSCH', category: '🎲 CHAOS',
+    text: 'Tauscht ein Kleidungsstück – bis zur nächsten Runde.', timer: null, resolve: 'discuss' },
+  { id: 9,  type: 'match', participants: 'pair', title: 'FAKE-BIOGRAFIE',
+    text: 'Eine:r erzählt 60 Sek. die erfundene Lebensgeschichte der/des anderen. Je absurder, desto besser.', timer: 60, resolve: 'success' },
+  { id: 10, type: 'match', participants: 'pair', title: 'BLIND BUILDER',
+    text: 'Eine:r beschreibt blind ein Foto vom Handy. Die/der andere baut es mit Bechern & Stöcken nach.', timer: 90, resolve: 'success' },
+
+  // ─── SQUAD MISSIONS · 3–4 Personen ───
+  { id: 11, type: 'squad', participants: 'squad', title: 'KULT GRÜNDEN',
+    text: 'Gründet einen Kult um einen zufälligen Gegenstand am Camp. Glaubenssätze inklusive.', timer: 120, resolve: 'success' },
+  { id: 12, type: 'squad', participants: 'squad', title: 'CAMP-WERBUNG',
+    text: 'Dreht eine 30-Sekunden-Werbung für euer Camp. Slogan & Soundtrack nicht vergessen.', timer: 120, resolve: 'success' },
+  { id: 13, type: 'squad', participants: 'squad', title: 'FESTIVAL-THRON',
+    text: 'Baut aus Stühlen, Bechern & Müll den hässlichsten Festival-Thron. Eine:r setzt sich drauf.', timer: 180, resolve: 'success' },
+  { id: 14, type: 'squad', participants: 'squad', title: 'CAMP-HYMNE',
+    text: 'Erfindet eine Hymne für euer Camp. Wird laut angestimmt.', timer: 120, resolve: 'success' },
+  { id: 15, type: 'squad', participants: 'squad', title: 'MENSCHLICHES KUNSTWERK',
+    text: 'Stellt gemeinsam ein berühmtes Bild, Album-Cover oder Meme nach. Foto-tauglich.', timer: 90, resolve: 'success' },
+  { id: 16, type: 'squad', participants: 'squad', title: 'IMPRO-THEATER',
+    text: 'Eine Szene aus dem Nichts.', timer: 120, resolve: 'success',
+    prompts: [
+      'ORT: Festivalklo · BERUF: Influencer · PROBLEM: kein Klopapier mehr',
+      'ORT: Wodka-Zelt · BERUF: Pfarrer · PROBLEM: die Eltern stehen davor',
+      'ORT: Mosh Pit · BERUF: Yoga-Coach · PROBLEM: die Yoga-Matte ist weg',
+      'ORT: Camping-Küche · BERUF: Sterne-Koch · PROBLEM: nur Ravioli & Bier',
+      'ORT: Backstage · BERUF: Roadie · PROBLEM: Sänger fehlt, Show in 5 Min',
+    ]},
+  { id: 17, type: 'squad', participants: 'squad', title: 'CAMP-PARTEI',
+    text: 'Gründet eine politische Partei fürs Camp. Stellt euer Wahlprogramm vor.', timer: 120, resolve: 'success' },
+  { id: 18, type: 'squad', participants: 'squad', title: 'VERKAUFSGENIES',
+    text: 'Verkauft dem Rudel einen völlig nutzlosen Gegenstand. Überzeugt!', timer: 90, resolve: 'success' },
+  { id: 19, type: 'squad', participants: 'squad', title: 'FESTIVAL-BOYBAND',
+    text: 'Erfindet Bandname, Tanzmove & Albumtitel. Auftritt: 20 Sekunden.', timer: 120, resolve: 'success' },
+  { id: 20, type: 'squad', participants: 'squad', title: 'NOTAUFNAHME',
+    text: 'Eine:r spielt Patient:in. Die anderen stellen eine komplett absurde Diagnose.', timer: 90, resolve: 'success' },
+
+  // ─── RUDEL CHALLENGES · alle spielen ───
+  { id: 21, type: 'rudel', participants: 'all', title: 'WER WÜRDE EHER?',
+    text: 'Alle zeigen gleichzeitig auf eine Person.', timer: 25, resolve: 'pick_from_all',
+    prompts: [
+      'Wer würde am ehesten einen Tag im Backstage verschwinden?',
+      'Wer würde am ehesten den falschen Bus nach Hause nehmen?',
+      'Wer würde am ehesten morgen früh noch tanzen?',
+      'Wer würde am ehesten dem Sänger anschreiben?',
+      'Wer würde am ehesten ein Tattoo am Festival kriegen?',
+      'Wer würde am ehesten die Klospülung zerstören?',
+    ]},
+  { id: 22, type: 'rudel', participants: 'all', title: 'SORTIERT EUCH',
+    text: 'Stellt euch in eine Reihe – ohne ein einziges Wort zu sagen.', timer: 60, resolve: 'success',
+    prompts: [
+      'Nach Alter (jung → alt)',
+      'Nach Körpergröße (klein → groß)',
+      'Nach Anzahl bereister Länder',
+      'Nach „wie betrunken war ich gestern" (1–10)',
+      'Nach Stunden Schlaf letzte Nacht',
+      'Nach Anzahl Festivals besucht',
+    ]},
+  { id: 23, type: 'rudel', participants: 'all', title: 'MENSCHEN-BINGO',
+    text: 'Findet jemanden im Rudel, auf den die Aussage zutrifft. Erst dann weitersagen.', timer: 180, resolve: 'success',
+    prompts: [
+      'War schon auf mehr als 5 Festivals',
+      'Hat ein Tattoo, das niemand kennt',
+      'Hat sich schon mal einen Knochen gebrochen',
+      'War schon mal auf der Bühne',
+      'Spricht eine 3. Sprache',
+      'Hat heute weniger als 4h geschlafen',
+    ]},
+  { id: 24, type: 'rudel', participants: 'all', title: 'GEHEIM-ABSTIMMUNG',
+    text: 'Jede:r flüstert eine Person ins Ohr der Spielleitung. Mehrheit gewinnt +2.', timer: 60, resolve: 'pick_from_all',
+    prompts: [
+      'Wer hat vermutlich die verrückteste Story?',
+      'Wer hat das beste Lachen?',
+      'Wer ist heimlich der/die coolste hier?',
+      'Wer würde am besten als Festival-Maskottchen passen?',
+      'Wer hat den geilsten Style?',
+    ]},
+  { id: 25, type: 'rudel', participants: 'all', title: 'WAHR ODER GELOGEN',
+    text: 'Eine:r erzählt eine Geschichte. Das Rudel entscheidet: wahr oder erfunden?', timer: 90, resolve: 'success' },
+  { id: 26, type: 'rudel', participants: 'all', title: 'HOT TAKES', category: '💬 HOT TAKE',
+    text: 'Positioniert euch: rechts = Zustimmung, links = Bullshit. Kurz diskutieren, dann weiter.', timer: 60, resolve: 'discuss',
+    prompts: [
+      '„Ananas gehört auf Pizza.“',
+      '„Wer nüchtern aufs Festival fährt, macht etwas falsch.“',
+      '„Ein Dixi-Klo um 4 Uhr morgens ist ein Abenteuer.“',
+      '„15€ für einen Döner sind völlig okay."',
+      '„Headliner ist überbewertet – die kleinen Bühnen sind besser."',
+      '„Pfand-Becher gehört abgeschafft."',
+      '„Duschen am Festival ist Zeitverschwendung."',
+      '„Camping ohne Pavillon ist kein echtes Camping."',
+      '„Sonnenbrille auch nachts ist ein Move."',
+    ]},
+  { id: 27, type: 'rudel', participants: 'all', title: 'DAS RUDEL ENTSCHEIDET',
+    text: 'Zwei aus dem Rudel vertreten gegensätzliche Meinungen. Spielleitung tippt das/die Gewinner:in an.', timer: 90, resolve: 'pick_from_all',
+    prompts: [
+      'Pizza Hawaii: Verbrechen oder Genie?',
+      'Festival oder Strandurlaub – was ist besser?',
+      'Nachts schlafen oder durchmachen?',
+      'Techno oder Rock – was ist die einzig wahre Musik?',
+    ]},
+  { id: 28, type: 'rudel', participants: 'all', title: 'RUDEL-RANKING', category: '🎲 CHAOS',
+    text: 'Bringt euch in Reihenfolge. Am nächsten Tag wird geprüft – keine Punkte jetzt.', timer: 60, resolve: 'discuss',
+    prompts: [
+      'Wer schläft heute zuerst ein?',
+      'Wer ist morgen zuerst wach?',
+      'Wer trinkt heute am meisten Wasser?',
+      'Wer verliert zuerst sein Handy?',
+      'Wer hat heute den krassesten Hangover?',
+    ]},
+
+  // ─── ERWEITERUNG · zusätzliche coole Karten ───
+  { id: 29, type: 'match', participants: 'pair', title: 'SUPERHELDEN-DUO',
+    text: 'Erfindet zusammen ein Superhelden-Duo: Namen, Superkraft, Schwäche. 30-Sek-Vorstellung.', timer: 75, resolve: 'success' },
+  { id: 30, type: 'match', participants: 'pair', title: 'BLIND-PORTRAIT',
+    text: 'Eine:r malt das Gesicht der anderen Person mit geschlossenen Augen. Rudel rät, wer es ist.', timer: 60, resolve: 'success' },
+  { id: 31, type: 'match', participants: 'pair', title: 'BANDNAMEN-FABRIK',
+    text: 'Erfindet zusammen 5 absurde Bandnamen plus Genre. Das Rudel ruft den besten.', timer: 60, resolve: 'success' },
+  { id: 32, type: 'match', participants: 'pair', title: 'SONG-EMOJIS',
+    text: 'Eine:r tippt einen Songtitel nur mit Emojis ins Handy und hält es hoch. Die/der andere rät.', timer: 60, resolve: 'success' },
+  { id: 33, type: 'match', participants: 'pair', title: 'DREI KLEINE DINGE', category: '🫂 KENNENLERNEN',
+    text: 'Nennt euch je 3 kleine Dinge, die euch heute gut gelaunt gemacht haben. Klein zählt auch.', timer: 60, resolve: 'discuss' },
+
+  { id: 34, type: 'squad', participants: 'squad', title: 'TURM-BAU',
+    text: 'Baut in 2 Minuten den höchsten freistehenden Turm aus Bechern, Dosen & Krempel.', timer: 120, resolve: 'success' },
+  { id: 35, type: 'squad', participants: 'squad', title: 'GEHEIM-ZEICHEN',
+    text: 'Erfindet ein 3-teiliges Geheimzeichen für euer Squad. Müsst es heute Abend noch 3× spontan ausführen.', timer: 90, resolve: 'success' },
+  { id: 36, type: 'squad', participants: 'squad', title: 'TANZ-TUTORIAL',
+    text: 'Bringt dem Rudel einen 4-Schritte-Move bei. Alle machen mit, sonst zählts nicht.', timer: 120, resolve: 'success' },
+
+  { id: 37, type: 'rudel', participants: 'all', title: 'PANTOMIME-KETTE',
+    text: 'Stille Post als Pantomime: erste Person sieht den Begriff, gibt ihn lautlos weiter. Letzte rät.', timer: 120, resolve: 'success' },
+  { id: 38, type: 'rudel', participants: 'all', title: 'WORT-KETTE',
+    text: 'Eine Story – Wort für Wort. Reihum, jede:r sagt EIN Wort. Wer abbricht oder stockt: trinkt.', timer: 90, resolve: 'success' },
+  { id: 39, type: 'rudel', participants: 'all', title: 'DREI ECKEN', category: '💬 HOT TAKE',
+    text: 'Drei Ecken: Ja / Nein / Vielleicht. App stellt die Frage, alle stellen sich hin. Kurz reden, dann weiter.', timer: 45, resolve: 'discuss',
+    prompts: [
+      'Würdest du nochmal auf dasselbe Festival, wenn du wüsstest, dass es regnet?',
+      'Soll die Spielleitung morgen früh laut Musik aufdrehen, um alle zu wecken?',
+      'Ist „nur ein Bier" eine Lüge?',
+      'Soll Pfand verdoppelt werden?',
+      'Würdest du dein Handy für ein Wochenende komplett abgeben?',
+      'Schlafsack oder Decke – was ist Camping-richtig?',
+      'Sollten Camping-Stühle einen Festival-Pass-Bonus geben?',
+    ]},
+
+  // ─── BEWEGUNG · raus aus dem Stuhl ───
+  { id: 40, type: 'match', participants: 'pair', title: 'RÜCKEN-AN-RÜCKEN',
+    text: 'Rücken an Rücken auf den Boden, Arme einhaken. Zusammen aufstehen – ohne Hände abzustützen.', timer: 60, resolve: 'success' },
+  { id: 41, type: 'match', participants: 'pair', title: 'STATUEN-SPIEGEL',
+    text: 'Eine:r bewegt sich in Slow-Mo, die/der andere spiegelt exakt. Rudel rät, wer führt.', timer: 60, resolve: 'success' },
+
+  { id: 42, type: 'squad', participants: 'squad', title: 'LUFT-VOLLEYBALL',
+    text: 'Haltet einen aufgeblasenen Beutel oder leichten Becher in der Luft. Nur Kopf, Ellbogen, Knie – Hände verboten.', timer: 60, resolve: 'success' },
+  { id: 43, type: 'squad', participants: 'squad', title: 'STAFFEL-WASSER',
+    text: 'Tragt nacheinander einen vollen Becher Wasser einmal ums Camp. Am Ende: wer noch am meisten drin hat, gewinnt.', timer: 90, resolve: 'success' },
+  { id: 44, type: 'squad', participants: 'squad', title: 'CHOREO-10',
+    text: 'Erfindet einen 10-Sekunden-Move im Sync. Alle dasselbe gleichzeitig. Performt vor dem Rudel.', timer: 90, resolve: 'success' },
+
+  { id: 45, type: 'rudel', participants: 'all', title: 'LA OLA',
+    text: 'Eine saubere La Ola im Kreis – sitzend oder stehend, im Takt. 3 Versuche, dann zählt sie.', timer: 45, resolve: 'success' },
+  { id: 46, type: 'rudel', participants: 'all', title: 'FREEZE-POSE',
+    text: 'Auf „GO" tanzen alle wild. Auf „STOPP" friert jede:r in einer Pose ein. Spielleitung tippt die lustigste Pose an.', timer: 30, resolve: 'pick_from_all' },
+  { id: 47, type: 'rudel', participants: 'all', title: 'TOTALE STILLE', category: '🎲 CHAOS',
+    text: '30 Sekunden komplette Stille und Stillstand. Wer zuckt, lacht oder redet: trinkt. Keine Punkte, nur ein Moment.', timer: 30, resolve: 'discuss' },
+];
+
+Object.assign(window, { V2_THEME, V2_POINTS, V2_CARDS });

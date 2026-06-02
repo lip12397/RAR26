@@ -73,13 +73,15 @@ function pickGroup(players, teams, history, activeCount, allowTrio) {
   return group;
 }
 
-// Nächste Karte ziehen. Typ wechselt ab (match → bluff → …). Innerhalb des Typs
-// ungenutzte Karten zuerst, dann neu mischen.
-function drawCard(cards, nextType, usedIds) {
-  const ofType = cards.filter(c => c.type === nextType);
-  let fresh = ofType.filter(c => !usedIds.includes(c.id));
-  if (!fresh.length) fresh = ofType; // alle durch → wiederholen
-  return shuffle(fresh)[0];
+// Nächste Karte ziehen. Bevorzugt den angefragten Typ. Wenn der ausgeht,
+// wechselt zum anderen Typ. Sind ALLE Karten durch, return null → Game Over.
+function drawCard(cards, preferredType, usedIds) {
+  const otherType = preferredType === 'match' ? 'bluff' : 'match';
+  const freshOf = type => cards.filter(c => c.type === type && !usedIds.includes(c.id));
+  let pool = freshOf(preferredType);
+  if (!pool.length) pool = freshOf(otherType);
+  if (!pool.length) return null; // alle Karten durch
+  return shuffle(pool)[0];
 }
 
 Object.assign(window, { shuffle, autoTeams, pairKey, teamOf, pickGroup, drawCard });
