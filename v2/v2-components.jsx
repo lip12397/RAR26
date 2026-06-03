@@ -18,7 +18,7 @@ function V2_shade(hex) {
   return `rgb(${r},${g},${b})`;
 }
 
-function V2_BigButton({ children, color = V2_PALETTE.ink, textColor = '#0a0a0c', onClick, sub, style = {}, ghost = false, disabled = false }) {
+function V2_BigButton({ children, color = V2_PALETTE.ink, textColor = '#0a0a0c', onClick, sub, style = {}, ghost = false, disabled = false, labelSize = 30 }) {
   const [down, setDown] = useStateV(false);
   const buzz = () => { try { navigator.vibrate && navigator.vibrate(18); } catch (e) {} };
   const base = {
@@ -46,7 +46,7 @@ function V2_BigButton({ children, color = V2_PALETTE.ink, textColor = '#0a0a0c',
       disabled={disabled}
       onClick={() => { if (!disabled) { buzz(); onClick && onClick(); } }}
       style={{ ...base, ...(ghost ? gh : solid) }}>
-      <span style={{ fontSize: 30 }}>{children}</span>
+      <span style={{ fontSize: labelSize }}>{children}</span>
       {sub && <span style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 700, fontSize: 12, letterSpacing: '1.5px', opacity: 0.8 }}>{sub}</span>}
     </button>
   );

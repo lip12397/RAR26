@@ -60,7 +60,7 @@ function V2_HubScreen({
   const remaining = Math.max(0, totalRounds - round);
   const isFree = mode === 'free';
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: isFree ? '50px 22px 28px' : '60px 22px 36px', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button onClick={onQuit} style={{ background: 'none', border: 'none', color: V2_PALETTE.dim, fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 12, letterSpacing: '1px', cursor: 'pointer', padding: 0 }}>RUDEL ✕</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -71,48 +71,50 @@ function V2_HubScreen({
 
       <V2_MvpBar players={players} scores={scores} onOpen={onLeaderboard} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: isFree ? 4 : 8, minHeight: isFree ? 90 : undefined }}>
         <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '3px', color: V2_PALETTE.dim }}>
           RUNDE {String(round + 1).padStart(2, '0')} / {totalRounds} · NOCH {remaining}
         </div>
-        <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 86, lineHeight: 0.85, color: V2_PALETTE.ink }}>{String(round + 1).padStart(2, '0')}</div>
+        {!isFree && (
+          <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 86, lineHeight: 0.85, color: V2_PALETTE.ink }}>{String(round + 1).padStart(2, '0')}</div>
+        )}
         <V2_AktChip akt={akt} multiplier={multiplier} />
         {!isFree && <div style={{ marginTop: 8 }}><V2_TypeChip type={nextType} /></div>}
 
         {akt < 3 && (
           <button onClick={onSkipAkt} style={{
-            marginTop: 10, background: 'none', border: '1.5px dashed #2c2c33',
-            color: V2_PALETTE.dim, fontFamily: 'Anton, sans-serif', fontSize: 13,
-            letterSpacing: '1.5px', padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+            marginTop: isFree ? 6 : 10, background: 'none', border: '1.5px dashed #2c2c33',
+            color: V2_PALETTE.dim, fontFamily: 'Anton, sans-serif', fontSize: 12,
+            letterSpacing: '1.5px', padding: '6px 12px', borderRadius: 999, cursor: 'pointer',
           }}>→ AKT {akt + 1} STARTEN</button>
         )}
       </div>
 
       {twistEnabled && (
         <button onClick={() => { if (!twistOn) V2_Sound.play('twist'); onToggleTwist(); }} style={{
-          alignSelf: 'center', marginBottom: 10,
+          alignSelf: 'center', marginBottom: isFree ? 8 : 10,
           background: twistOn ? V2_PALETTE.gold : 'transparent',
           color: twistOn ? '#0a0a0c' : V2_PALETTE.gold,
           border: `2px solid ${V2_PALETTE.gold}`,
-          fontFamily: 'Anton, sans-serif', fontSize: 14, letterSpacing: '1.5px',
-          padding: '8px 18px', borderRadius: 999, cursor: 'pointer',
+          fontFamily: 'Anton, sans-serif', fontSize: isFree ? 13 : 14, letterSpacing: '1.5px',
+          padding: isFree ? '6px 16px' : '8px 18px', borderRadius: 999, cursor: 'pointer',
           boxShadow: twistOn ? `0 0 14px ${V2_PALETTE.gold}66` : 'none',
         }}>⚡ TWIST: {twistOn ? 'AN' : 'AUS'}</button>
       )}
 
       {isFree ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '2.5px', color: V2_PALETTE.dim, textAlign: 'center', marginBottom: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '2.5px', color: V2_PALETTE.dim, textAlign: 'center' }}>
             WAS WIRD GEZOGEN?
           </div>
           {[
-            { t: 'match', label: 'PAAR',         sub: '1 VS 1 · MATCH & MISSION' },
-            { t: 'squad', label: 'SQUAD',        sub: '3–4 LEUTE · MINI-MISSION' },
-            { t: 'rudel', label: 'GANZES RUDEL', sub: 'ALLE SPIELEN MIT' },
+            { t: 'match', label: 'PAAR',         sub: '1 VS 1' },
+            { t: 'squad', label: 'SQUAD',        sub: '3–4 LEUTE' },
+            { t: 'rudel', label: 'GANZES RUDEL', sub: 'ALLE' },
           ].map(opt => (
             <V2_BigButton key={opt.t} color={V2_typeColor(opt.t)}
               onClick={() => { V2_Sound.play('draw'); onDraw(opt.t); }}
-              style={{ padding: '16px 14px' }}
+              style={{ padding: '12px 12px' }} labelSize={22}
               sub={opt.sub}>{opt.label}</V2_BigButton>
           ))}
         </div>
