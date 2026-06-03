@@ -30,7 +30,7 @@ const V2_CARDS = [
   { id: 3,  type: 'match', participants: 'pair', title: 'FREMDE FRAGEN', category: '🫂 KENNENLERNEN',
     text: 'Stellt euch gegenseitig je 3 ungewöhnliche Fragen, die ihr normalerweise niemandem stellen würdet. Beide antworten ehrlich. Keine Wertung, einfach reden.', timer: 90, resolve: 'discuss' },
   { id: 4,  type: 'match', participants: 'pair', title: 'LIP-SYNC BATTLE',
-    text: 'Sobald der nächste Song aus der Box läuft, performt ihr beide synchron Lip-Sync dazu. Mimik, Tanz, volle Festival-Show vor der Gruppe.', timer: 90, resolve: 'success',
+    text: 'Startet einen beliebigen Song aus der Box oder einem Handy. Performt beide synchron Lip-Sync dazu – Mimik, Tanz, volle Festival-Show vor dem Rudel. Die letzten 30 Sekunden vom Song reichen.', timer: 90, resolve: 'success',
     twist: 'Komplett in Zeitlupe – Slow-Motion.',
     drinkRule: "Wer aussteigt oder kichert, trinkt einen Schluck." },
   { id: 5,  type: 'match', participants: 'pair', title: 'LACHEN VERBOTEN',
@@ -52,7 +52,7 @@ const V2_CARDS = [
     twist: "Erzählt die Story abwechselnd – Satz für Satz.",
     drinkRule: "Wer stockt oder lacht, trinkt." },
   { id: 10, type: 'match', participants: 'pair', title: 'BLIND BUILDER',
-    text: 'Eine Person sucht ein zufälliges Foto auf dem Handy und beschreibt es nur mit Worten. Die andere baut das Bild aus Bechern, Stöcken und Krempel nach, ohne es zu sehen.', timer: 90, resolve: 'success',
+    text: 'Eine Person aus dem Paar sucht ein zufälliges Foto auf dem eigenen Handy aus (Galerie, Insta, egal) und beschreibt es nur mit Worten. Die andere Person darf das Foto NICHT sehen und baut das Motiv Stück für Stück aus Bechern, Stöcken und Krempel nach.', timer: 90, resolve: 'success',
     twist: 'Beide blind – beide Augen zu.',
     drinkRule: "Wenn das Endergebnis komplett daneben ist: beide trinken." },
 
@@ -74,9 +74,9 @@ const V2_CARDS = [
     twist: "Die Hymne wird operngerecht gesungen – voller Schmelz.",
     drinkRule: "Wer beim Singen aussetzt, trinkt." },
   { id: 15, type: 'squad', participants: 'squad', title: 'MENSCHLICHES KUNSTWERK',
-    text: 'Stellt gemeinsam ein berühmtes Bild, Album-Cover oder Internet-Meme nach (Abbey Road, das ablenkte-Freund-Meme, …). Eine Person macht das Foto, das Rudel rät, was es ist.', timer: 90, resolve: 'success',
-    twist: "Alle haben die Augen zu, Spielleitung dirigiert per Stimme.",
-    drinkRule: "Wer am Foto fehlt oder zu spät kommt, trinkt." },
+    text: 'Sucht euch heimlich ein berühmtes Bild, Album-Cover oder Internet-Meme aus (z. B. Abbey Road, Last Supper, „distracted boyfriend"). Stellt es mit euren Körpern nach und friert in der Pose ein. Das Rudel rät laut, was ihr darstellt.', timer: 90, resolve: 'success',
+    twist: "Spielleitung dirigiert komplett per Stimme – Squad hat Augen zu, bis die Pose steht.",
+    drinkRule: "Wenn das Rudel das Motiv nicht errät: alle aus dem Squad trinken einen Schluck." },
   { id: 16, type: 'squad', participants: 'squad', title: 'IMPRO-THEATER',
     text: 'Spielt eine kleine Theaterszene basierend auf dem Hinweis unten. Alle dürfen reden, sich bewegen und übertreiben. Macht eine echte Mini-Vorstellung daraus.', timer: 120, resolve: 'success',
     prompts: [
@@ -116,7 +116,7 @@ const V2_CARDS = [
       'Wer würde am ehesten ein Tattoo am Festival kriegen?',
       'Wer würde am ehesten die Klospülung zerstören?',
     ],
-    twist: "Alle zeigen mit den FÜSSEN, nicht mit den Händen.",
+    twist: "Alle zeigen mit den FÜSSEN, nicht mit den Händen – setzt euch hin oder hebt das Bein.",
     drinkRule: "Die am häufigsten gezeigte Person trinkt einen Schluck."},
   { id: 22, type: 'rudel', participants: 'all', title: 'SORTIERT EUCH',
     text: 'Stellt euch in eine Reihe sortiert nach dem Kriterium unten. Aber: ihr dürft KEIN Wort sagen. Nur Gesten, Mimik, Zeichen. Am Ende wird gemeinsam überprüft.', timer: 60, resolve: 'success',
@@ -131,7 +131,7 @@ const V2_CARDS = [
     twist: "Sortiert euch mit verbundenen Augen.",
     drinkRule: "Wer auch nur ein einziges Wort sagt, trinkt."},
   { id: 23, type: 'rudel', participants: 'all', title: 'MENSCHEN-BINGO',
-    text: 'Schaut die Aussage unten an. Geht durchs Rudel und findet jemanden, auf den sie zutrifft. Wenn jemand passendes findet, wird laut gerufen. So lange suchen, bis alle Aussagen ein Match haben.', timer: 180, resolve: 'success',
+    text: 'Lest die Aussage unten laut vor. Findet eine Person aus dem Rudel, auf die sie zutrifft. Wer sich angesprochen fühlt, hebt die Hand und erzählt kurz die Story dazu.', timer: 90, resolve: 'success',
     prompts: [
       'War schon auf mehr als 5 Festivals',
       'Hat ein Tattoo, das niemand kennt',
@@ -140,8 +140,8 @@ const V2_CARDS = [
       'Spricht eine 3. Sprache',
       'Hat heute weniger als 4h geschlafen',
     ],
-    twist: "Nur mit Gesten fragen – kein Reden erlaubt.",
-    drinkRule: "Die letzte Person ohne Match-Treffer trinkt."},
+    twist: "Niemand darf reden – nur mit Gesten und Mimik fragen und antworten.",
+    drinkRule: "Wenn niemand passt: alle trinken einen Schluck."},
   { id: 24, type: 'rudel', participants: 'all', title: 'GEHEIM-ABSTIMMUNG',
     text: 'Lest die Frage unten. Jede:r läuft kurz zur Spielleitung und flüstert ihr/ihm eine Person aus dem Rudel ins Ohr. Die Person mit den meisten Stimmen gewinnt Punkte.', timer: 60, resolve: 'pick_from_all',
     prompts: [
@@ -182,7 +182,7 @@ const V2_CARDS = [
     twist: "Beide Seiten singen ihre Argumente statt zu reden.",
     drinkRule: "Die verlierende Seite trinkt einen Schluck."},
   { id: 28, type: 'rudel', participants: 'all', title: 'RUDEL-RANKING', category: '🎲 CHAOS',
-    text: 'Sortiert euch in eine Reihenfolge basierend auf der Frage unten. Schreibt es auf einem Zettel auf. Morgen früh wird verglichen, wer richtig getippt hat. Heute keine Punkte.', timer: 60, resolve: 'discuss',
+    text: 'Tippt gemeinsam eine Reihenfolge auf die Frage unten. Die Spielleitung hält den Tipp im Handy fest (Notiz oder Screenshot). Morgen früh wird verglichen, wer richtig getippt hat. Heute keine Punkte.', timer: 60, resolve: 'discuss',
     prompts: [
       'Wer schläft heute zuerst ein?',
       'Wer ist morgen zuerst wach?',
@@ -225,7 +225,19 @@ const V2_CARDS = [
     drinkRule: "Wer im Rudel den Move nicht mittanzt, trinkt." },
 
   { id: 37, type: 'rudel', participants: 'all', title: 'PANTOMIME-KETTE',
-    text: 'Stellt euch in einer Reihe auf. Die erste Person sieht einen Begriff auf dem Handy und spielt ihn der zweiten Person stumm vor. Diese spielt es der dritten vor und so weiter. Die letzte rät den Begriff laut.', timer: 120, resolve: 'success',
+    text: 'Stellt euch in einer Reihe auf. Die Spielleitung zeigt heimlich NUR der ersten Person einen Begriff aus der Liste unten. Diese spielt ihn stumm der zweiten Person vor, die der dritten – und so weiter. Die letzte rät den Begriff laut.', timer: 120, resolve: 'success',
+    prompts: [
+      'Crowdsurfing',
+      'Festival-Toilette in der Nacht',
+      'Bierdusche',
+      'Headliner-Auftritt',
+      'Glitzer-Body',
+      'Mosh Pit',
+      'Wodka-Eimer',
+      'Pavillon-Zeltchaos',
+      'Schlamm-Schlacht',
+      'Stage Diver',
+    ],
     twist: 'Ohne Hände – nur Körper, Füße, Mimik.',
     drinkRule: "Falscher Begriff am Ende: alle in der Kette trinken einen Schluck." },
   { id: 38, type: 'rudel', participants: 'all', title: 'WORT-KETTE',
@@ -250,11 +262,6 @@ const V2_CARDS = [
     text: 'Setzt euch Rücken an Rücken auf den Boden und hakt eure Arme ineinander. Versucht zusammen aufzustehen, ohne die Hände auf den Boden zu stützen. Klingt easy – ist es nicht.', timer: 60, resolve: 'success',
     twist: "Beide haben die Augen zu.",
     drinkRule: "Wenn ihr es nicht schafft: beide trinken." },
-  { id: 41, type: 'match', participants: 'pair', title: 'STATUEN-SPIEGEL',
-    text: 'Eine Person bewegt sich in Zeitlupe, die andere spiegelt jede Bewegung exakt. Macht es 60 Sekunden lang. Am Ende rät das Rudel, wer geführt und wer gespiegelt hat.', timer: 60, resolve: 'success',
-    twist: 'Rollen wechseln alle 10 Sekunden – ohne Pause.',
-    drinkRule: "Wer als Erste:r aus dem Spiegel ausbricht, trinkt." },
-
   { id: 42, type: 'squad', participants: 'squad', title: 'LUFT-VOLLEYBALL',
     text: 'Nehmt einen leichten Gegenstand: einen aufgeblasenen Plastikbeutel oder einen leeren Becher. Haltet ihn 60 Sekunden lang in der Luft – aber nur mit Kopf, Ellbogen und Knien. Hände verboten.', timer: 60, resolve: 'success',
     twist: "Nur Schultern und Knie – Kopf verboten.",
@@ -286,7 +293,7 @@ const V2_CARDS = [
   { id: 49, type: 'rudel', participants: 'all', title: 'PROST-SPRACHEN', drinksRequired: true,
     text: 'Setzt euch in einen Kreis. Reihum stößt jede:r mit jemandem an und sagt „Prost" in einer anderen Sprache (Cheers, Salud, Skål, Kanpai, …). Wer eine Sprache wiederholt oder stockt, trinkt einen Schluck.', timer: 60, resolve: 'success' },
   { id: 50, type: 'match', participants: 'pair', title: 'KING\'S CUP DUELL', drinksRequired: true,
-    text: 'Eine Person aus dem Paar erfindet eine kleine Trinkregel (z. B. „wer ‚ich\' sagt, trinkt einen Schluck"). Die andere fügt eine zweite Regel hinzu. Beide Regeln gelten ab jetzt – bis zur nächsten Match-Karte.', timer: 45, resolve: 'success' },
+    text: 'Eine Person aus dem Paar erfindet eine kleine Trinkregel für das Rudel (z. B. „wer ‚ich\' sagt, trinkt einen Schluck" oder „wer mit der linken Hand trinkt, trinkt doppelt"). Die andere fügt eine zweite Regel hinzu. Beide Regeln gelten für die nächsten 3 Runden.', timer: 60, resolve: 'success' },
 
   // ─── ECHTES TRINKSPIEL · weitere drink-only Karten ───
   { id: 51, type: 'squad', participants: 'squad', title: 'FLIP CUP', drinksRequired: true,
@@ -297,6 +304,12 @@ const V2_CARDS = [
     text: 'Zählt reihum laut von 1 hoch. Bei jeder 7 und jedem Vielfachen von 7 (14, 21, 28…) sagt ihr stattdessen „BUZZ". Wer falsch zählt oder zögert, trinkt einen Schluck. Dann wieder bei 1 anfangen.', timer: 90, resolve: 'success' },
   { id: 54, type: 'rudel', participants: 'all', title: 'ABC-COCKTAIL', drinksRequired: true,
     text: 'Reihum nennt jede:r eine Cocktail- oder Drink-Zutat alphabetisch (A wie Apfelsaft, B wie Bier, C wie Cointreau…). Wer stockt, wiederholt oder unfair improvisiert, trinkt einen Schluck.', timer: 90, resolve: 'success' },
+
+  // ─── EXTRA · neuer Klassiker ───
+  { id: 55, type: 'match', participants: 'pair', title: 'ARMDRÜCKEN-DUELL',
+    text: 'Setzt euch an die Kühlbox, einen Campingtisch oder kniet euch auf eine flache Fläche gegenüber. Klassisches Armdrücken: Ellbogen auf die Fläche, Hände ineinander. Das Rudel zählt „3 – 2 – 1 – LOS". Best of 3 Runden.', timer: 60, resolve: 'success',
+    twist: 'Mit der schwachen Hand – Rechtshänder drücken links, Linkshänder rechts.',
+    drinkRule: "Wer eine Runde verliert, trinkt einen Schluck. Bei 0:3: noch ein Extra-Schluck." },
 ];
 
 Object.assign(window, { V2_THEME, V2_POINTS, V2_CARDS });
