@@ -66,9 +66,9 @@ function V2_pickSquad(players, history, activeCount, size = 3) {
   return group;
 }
 
-// Nächster Karten-Typ. Gewichtet 40/30/30, ohne 2× direkt hintereinander.
+// Nächster Karten-Typ. Squad/Rudel leicht bevorzugt (27/36.5/36.5), ohne 2× hintereinander.
 function V2_nextType(lastType) {
-  const pool = ['match', 'match', 'match', 'match', 'squad', 'squad', 'squad', 'rudel', 'rudel', 'rudel'];
+  const pool = ['match', 'match', 'match', 'squad', 'squad', 'squad', 'squad', 'rudel', 'rudel', 'rudel', 'rudel'];
   const filtered = pool.filter(t => t !== lastType);
   const use = filtered.length ? filtered : pool;
   return V2_shuffle(use)[0];
@@ -90,11 +90,11 @@ function V2_aktOf(round, thresholds) {
 const V2_aktTitle = a => ({ 1: 'KENNENLERNEN', 2: 'ENTFALTUNG', 3: 'RUDEL' }[a] || 'AKT');
 const V2_aktMultiplier = a => ({ 1: 1, 2: 1.5, 3: 2 }[a] || 1);
 
-// Typ-Gewichtung pro Akt (mehr Variation als die globale 40/30/30)
+// Typ-Gewichtung pro Akt. Squad & Rudel leicht bevorzugt, aber Akt-Charakter bleibt.
 const V2_aktTypeWeights = {
-  1: { match: 5, squad: 1, rudel: 2 }, // Kennenlernen: Match dominant
-  2: { match: 3, squad: 3, rudel: 2 }, // Entfaltung: ausgeglichen, Squad rein
-  3: { match: 2, squad: 2, rudel: 4 }, // Rudel: Climax mit Rudel-Challenges
+  1: { match: 4, squad: 2, rudel: 2 }, // Kennenlernen: Match leitet, aber nicht erdrückend (50/25/25)
+  2: { match: 2, squad: 3, rudel: 3 }, // Entfaltung: Gruppen-Dynamik vorne (25/37.5/37.5)
+  3: { match: 1, squad: 3, rudel: 4 }, // Climax: Rudel-Energie (12.5/37.5/50)
 };
 function V2_nextTypeForAkt(akt, lastType) {
   const weights = V2_aktTypeWeights[akt] || V2_aktTypeWeights[1];

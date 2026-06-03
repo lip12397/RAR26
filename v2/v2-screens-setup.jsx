@@ -181,6 +181,14 @@ function V2_ConfigScreen({ config, setConfig, onBack, onStartGame }) {
             ]} />
         </Section>
 
+        <Section label="MODUS" hint="Reihenfolge der Karten-Typen">
+          <Seg value={config.mode || 'auto'} accent={V2_PALETTE.match} onChange={v => update({ mode: v })}
+            options={[
+              { value: 'auto', label: '🔀 AUTO',     sub: 'APP ROTIERT' },
+              { value: 'free', label: '🎯 WÄHLBAR', sub: 'SL ENTSCHEIDET' },
+            ]} />
+        </Section>
+
         <Section label="TWIST" hint="Spielleitung kann pro Karte einen Modifier anschalten">
           <Seg value={config.twistEnabled ? 'on' : 'off'} accent={V2_PALETTE.gold} onChange={v => update({ twistEnabled: v === 'on' })}
             options={[

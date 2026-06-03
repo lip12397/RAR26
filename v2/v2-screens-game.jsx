@@ -53,11 +53,12 @@ function V2_AktChip({ akt, multiplier }) {
 // ─────────────────────────────────────────────────────────────
 function V2_HubScreen({
   players, scores, round, totalRounds, akt, multiplier, nextType,
-  twistOn, twistEnabled, onToggleTwist, onSkipAkt,
+  mode, twistOn, twistEnabled, onToggleTwist, onSkipAkt,
   onDraw, onLeaderboard, onQuit,
 }) {
   const c = V2_typeColor(nextType);
   const remaining = Math.max(0, totalRounds - round);
+  const isFree = mode === 'free';
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -76,7 +77,7 @@ function V2_HubScreen({
         </div>
         <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 86, lineHeight: 0.85, color: V2_PALETTE.ink }}>{String(round + 1).padStart(2, '0')}</div>
         <V2_AktChip akt={akt} multiplier={multiplier} />
-        <div style={{ marginTop: 8 }}><V2_TypeChip type={nextType} /></div>
+        {!isFree && <div style={{ marginTop: 8 }}><V2_TypeChip type={nextType} /></div>}
 
         {akt < 3 && (
           <button onClick={onSkipAkt} style={{
@@ -99,11 +100,29 @@ function V2_HubScreen({
         }}>⚡ TWIST: {twistOn ? 'AN' : 'AUS'}</button>
       )}
 
-      <V2_BigButton color={c} onClick={() => { V2_Sound.play('draw'); onDraw(); }} sub={
-        nextType === 'match' ? 'PAAR WIRD AUSGELOST' :
-        nextType === 'squad' ? 'SQUAD WIRD AUSGELOST' :
-        'ALLE SPIELEN MIT'
-      }>NÄCHSTE RUNDE</V2_BigButton>
+      {isFree ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '2.5px', color: V2_PALETTE.dim, textAlign: 'center', marginBottom: 2 }}>
+            WAS WIRD GEZOGEN?
+          </div>
+          {[
+            { t: 'match', label: 'PAAR',         sub: '1 VS 1 · MATCH & MISSION' },
+            { t: 'squad', label: 'SQUAD',        sub: '3–4 LEUTE · MINI-MISSION' },
+            { t: 'rudel', label: 'GANZES RUDEL', sub: 'ALLE SPIELEN MIT' },
+          ].map(opt => (
+            <V2_BigButton key={opt.t} color={V2_typeColor(opt.t)}
+              onClick={() => { V2_Sound.play('draw'); onDraw(opt.t); }}
+              style={{ padding: '16px 14px' }}
+              sub={opt.sub}>{opt.label}</V2_BigButton>
+          ))}
+        </div>
+      ) : (
+        <V2_BigButton color={c} onClick={() => { V2_Sound.play('draw'); onDraw(); }} sub={
+          nextType === 'match' ? 'PAAR WIRD AUSGELOST' :
+          nextType === 'squad' ? 'SQUAD WIRD AUSGELOST' :
+          'ALLE SPIELEN MIT'
+        }>NÄCHSTE RUNDE</V2_BigButton>
+      )}
     </div>
   );
 }

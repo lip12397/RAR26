@@ -3,7 +3,7 @@
 const { useState: useStateVA, useEffect: useEffectVA } = React;
 
 const V2_STORE_KEY = 'rudel_v2_state_v2';
-const V2_INITIAL_CONFIG = { length: 'medium', tone: 'standard', drinks: false, twistEnabled: true };
+const V2_INITIAL_CONFIG = { length: 'medium', tone: 'standard', drinks: false, twistEnabled: true, mode: 'auto' };
 const V2_INITIAL_STATS_FOR = id => ({ voteWins: 0, pickReceived: 0, chaosCount: 0 });
 
 const V2_INITIAL = {
@@ -62,11 +62,11 @@ function V2_App() {
   const startGame = () => startWithCurrent();
   const restartSameCrew = () => startWithCurrent();
 
-  // ── Karte ziehen ──
-  const draw = () => setG(prev => {
+  // ── Karte ziehen ── (optional: type erzwingen – für WAHLBAR-Modus)
+  const draw = (overrideType) => setG(prev => {
     const akt = V2_aktOf(prev.round, prev.aktThresholds);
     const deck = V2_filterDeck(V2_CARDS, prev.config.tone, prev.config.drinks);
-    const type = prev.nextType || V2_nextTypeForAkt(akt, prev.lastType);
+    const type = overrideType || prev.nextType || V2_nextTypeForAkt(akt, prev.lastType);
     // Twist AN → bevorzuge Karten mit Twist
     let baseCard = null;
     if (prev.twistOn) {
@@ -205,6 +205,7 @@ function V2_App() {
       players={G.players} scores={G.scores} round={G.round} totalRounds={G.totalRounds}
       akt={akt} multiplier={V2_aktMultiplier(akt)}
       nextType={G.nextType || 'match'}
+      mode={G.config.mode || 'auto'}
       twistOn={G.twistOn} twistEnabled={G.config.twistEnabled}
       onToggleTwist={toggleTwist} onSkipAkt={skipAkt}
       onDraw={draw} onLeaderboard={() => patch({ screen: 'leaderboard' })} onQuit={quit} />;
