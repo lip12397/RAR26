@@ -62,7 +62,10 @@ function V2_HubScreen({
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button onClick={onQuit} style={{ background: 'none', border: 'none', color: V2_PALETTE.dim, fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 12, letterSpacing: '1px', cursor: 'pointer', padding: 0 }}>RUDEL ✕</button>
-        <V2_Sticker color={V2_PALETTE.rudel} rotate={3}>{V2_THEME.festival} {V2_THEME.year}</V2_Sticker>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <V2_Sticker color={V2_PALETTE.rudel} rotate={3}>{V2_THEME.festival} {V2_THEME.year}</V2_Sticker>
+          <V2SoundToggle />
+        </div>
       </div>
 
       <V2_MvpBar players={players} scores={scores} onOpen={onLeaderboard} />
@@ -85,7 +88,7 @@ function V2_HubScreen({
       </div>
 
       {twistEnabled && (
-        <button onClick={onToggleTwist} style={{
+        <button onClick={() => { if (!twistOn) V2_Sound.play('twist'); onToggleTwist(); }} style={{
           alignSelf: 'center', marginBottom: 10,
           background: twistOn ? V2_PALETTE.gold : 'transparent',
           color: twistOn ? '#0a0a0c' : V2_PALETTE.gold,
@@ -96,7 +99,7 @@ function V2_HubScreen({
         }}>⚡ TWIST: {twistOn ? 'AN' : 'AUS'}</button>
       )}
 
-      <V2_BigButton color={c} onClick={onDraw} sub={
+      <V2_BigButton color={c} onClick={() => { V2_Sound.play('draw'); onDraw(); }} sub={
         nextType === 'match' ? 'PAAR WIRD AUSGELOST' :
         nextType === 'squad' ? 'SQUAD WIRD AUSGELOST' :
         'ALLE SPIELEN MIT'
@@ -125,10 +128,12 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
         if (r <= 1) {
           clearInterval(t);
           try { navigator.vibrate && navigator.vibrate([60, 40, 60, 40, 120]); } catch (e) {}
+          V2_Sound.play('end');
           setRunning(false);
           setTimeout(() => setPhase('resolve'), 120);
           return 0;
         }
+        if (r <= 4) V2_Sound.play('tick');
         return r - 1;
       });
     }, 1000);
@@ -136,6 +141,11 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
   }, [phase, running]);
 
   const startTimer = () => { setPhase('run'); setRunning(true); };
+  // Sound bei Auswertung: win/lose je nach Punkten
+  const sfxResolve = (recipients, pts, fx) => {
+    V2_Sound.play(pts > 0 && recipients && recipients.length ? 'win' : 'lose');
+    onResolve(recipients, pts, fx);
+  };
   const toResolve = () => { setRunning(false); setPhase('resolve'); };
   const togglePick = id => setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
@@ -257,7 +267,7 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
               : card.category && card.category.includes('KENNENLERNEN') ? 'KEINE PUNKTE · EINFACH REDEN'
               : 'KEINE PUNKTE · EINFACH WEITER';
     action = (
-      <V2_BigButton color={accent} onClick={() => onResolve([], 0, { text: 'WEITER!', color: accent })} sub={sub}>
+      <V2_BigButton color={accent} onClick={() => sfxResolve([], 0, { text: 'WEITER!', color: accent })} sub={sub}>
         NÄCHSTE KARTE →
       </V2_BigButton>
     );
@@ -266,12 +276,12 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontFamily: 'Anton, sans-serif', fontSize: 22, color: V2_PALETTE.ink, marginBottom: 2 }}>WER GEWINNT?</div>
         {group.map(id => (
-          <button key={id} onClick={() => onResolve([id], V2_POINTS.vote, { text: `${nameOf(id)} +${V2_POINTS.vote}!`, color: accent })} style={V2_voteBtn(accent)}>
+          <button key={id} onClick={() => sfxResolve([id], V2_POINTS.vote, { text: `${nameOf(id)} +${V2_POINTS.vote}!`, color: accent })} style={V2_voteBtn(accent)}>
             <span style={{ flex: 1, textAlign: 'left' }}>{nameOf(id)}</span>
             <span style={{ fontFamily: 'Anton, sans-serif', fontSize: 16 }}>+{V2_POINTS.vote}</span>
           </button>
         ))}
-        <button onClick={() => onResolve([], 0, { text: 'UNENTSCHIEDEN', color: V2_PALETTE.dim })} style={V2_skipLink}>Unentschieden</button>
+        <button onClick={() => sfxResolve([], 0, { text: 'UNENTSCHIEDEN', color: V2_PALETTE.dim })} style={V2_skipLink}>Unentschieden</button>
       </div>
     );
   } else if (card.resolve === 'pick_from_all') {
@@ -285,7 +295,7 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
           ))}
         </div>
         <V2_BigButton color={accent} disabled={picked.length === 0}
-          onClick={() => onResolve(picked, V2_POINTS.pick, {
+          onClick={() => sfxResolve(picked, V2_POINTS.pick, {
             text: picked.length === 1 ? `${nameOf(picked[0])} +${V2_POINTS.pick}!` : `${picked.length}× +${V2_POINTS.pick}!`,
             color: accent,
           })}
@@ -300,10 +310,10 @@ function V2_CardScreen({ current, players, scores, config, tonePace, nameOf, onR
                     `JE +${V2_POINTS.success} FÜRS RUDEL`;
     action = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <V2_BigButton color={V2_PALETTE.rudel} onClick={() => onResolve(group, V2_POINTS.success, { text: 'GESCHAFFT!', color: V2_PALETTE.rudel })} sub={subText}>
+        <V2_BigButton color={V2_PALETTE.rudel} onClick={() => sfxResolve(group, V2_POINTS.success, { text: 'GESCHAFFT!', color: V2_PALETTE.rudel })} sub={subText}>
           GESCHAFFT ✓
         </V2_BigButton>
-        <button onClick={() => onResolve([], 0, { text: 'SCHADE…', color: V2_PALETTE.danger })} style={V2_skipLink}>Nicht geschafft</button>
+        <button onClick={() => sfxResolve([], 0, { text: 'SCHADE…', color: V2_PALETTE.danger })} style={V2_skipLink}>Nicht geschafft</button>
       </div>
     );
   }
@@ -340,6 +350,7 @@ const V2_voteBtn = accent => ({
 // TRANSITION — zwischen Akten
 // ─────────────────────────────────────────────────────────────
 function V2_TransitionScreen({ akt, players, scores, multiplier, onContinue }) {
+  useEffectVG(() => { V2_Sound.play('akt'); }, []);
   const colors = { 1: V2_PALETTE.squad, 2: V2_PALETTE.match, 3: V2_PALETTE.rudel };
   const c = colors[akt] || V2_PALETTE.ink;
   const leader = players.map(p => ({ ...p, pts: scores[p.id] || 0 })).sort((a, b) => b.pts - a.pts)[0];

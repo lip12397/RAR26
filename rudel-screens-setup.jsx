@@ -194,6 +194,7 @@ Object.assign(window, { StartScreen, SetupScreen, TeamRevealScreen });
 // TEAM REVEAL — Bandnamen-Vorstellung
 // ─────────────────────────────────────────────────────────────
 function TeamRevealScreen({ team, name, players, teams, step, onContinue }) {
+  React.useEffect(() => { RudelSound.play('reveal'); }, []);
   const c = teamColor(team);
   const memberNames = (teams[team] || []).map(id => (players.find(p => p.id === id) || {}).name || '').filter(Boolean);
   const isLast = step === 2;

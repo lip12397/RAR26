@@ -35,7 +35,10 @@ function HubScreen({ scores, teamNames, round, nextType, onDraw, onScore, onQuit
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '60px 22px 36px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button onClick={onQuit} style={{ background: 'none', border: 'none', color: PALETTE.dim, fontFamily: 'Archivo, sans-serif', fontWeight: 800, fontSize: 12, letterSpacing: '1px', cursor: 'pointer', padding: 0 }}>RUDEL ✕</button>
-        <Sticker color={PALETTE.B} rotate={3}>{RUDEL_THEME.festival} {RUDEL_THEME.year}</Sticker>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Sticker color={PALETTE.B} rotate={3}>{RUDEL_THEME.festival} {RUDEL_THEME.year}</Sticker>
+          <RudelSoundToggle />
+        </div>
       </div>
 
       <ScoreBand scores={scores} teamNames={teamNames} onOpen={onScore} />
@@ -54,7 +57,7 @@ function HubScreen({ scores, teamNames, round, nextType, onDraw, onScore, onQuit
         </div>
       </div>
 
-      <BigButton color={c} onClick={onDraw} sub={isMatch ? 'PAAR WIRD AUSGELOST' : 'TEAM GEGEN TEAM'}>
+      <BigButton color={c} onClick={() => { RudelSound.play('draw'); onDraw(); }} sub={isMatch ? 'PAAR WIRD AUSGELOST' : 'TEAM GEGEN TEAM'}>
         NÄCHSTE RUNDE
       </BigButton>
     </div>
@@ -81,10 +84,12 @@ function CardScreen({ current, drinks, teamNames, nameOf, teamOfId, onResolve, o
         if (r <= 1) {
           clearInterval(t);
           try { navigator.vibrate && navigator.vibrate([60, 40, 60, 40, 120]); } catch (e) {}
+          RudelSound.play('end');
           setRunning(false);
           setTimeout(() => setPhase('resolve'), 120);
           return 0;
         }
+        if (r <= 4) RudelSound.play('tick');
         return r - 1;
       });
     }, 1000);
@@ -92,6 +97,11 @@ function CardScreen({ current, drinks, teamNames, nameOf, teamOfId, onResolve, o
   }, [phase, running]);
 
   const startTimer = () => { setPhase('run'); setRunning(true); };
+  // Sound-Helper für Auswertung (win/lose je nach Punkten)
+  const sfxResolve = (dA, dB, fx) => {
+    RudelSound.play((dA + dB) > 0 ? 'win' : 'lose');
+    onResolve(dA, dB, fx);
+  };
   const toResolve = () => { setRunning(false); setPhase('resolve'); };
 
   // header band (Akzentfarbe, dunkler Text)
@@ -179,30 +189,30 @@ function CardScreen({ current, drinks, teamNames, nameOf, teamOfId, onResolve, o
       const note = teamsRep.length > 1 ? `+1 für ${teamsRep.map(tn).join(' & ')}` : `+1 für ${tn(teamsRep[0])}`;
       action = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <BigButton color={PALETTE.bluff} onClick={() => onResolve(
+          <BigButton color={PALETTE.bluff} onClick={() => sfxResolve(
             teamsRep.includes('A') ? 1 : 0, teamsRep.includes('B') ? 1 : 0,
             { text: 'GESCHAFFT!', color: PALETTE.bluff })} sub={note}>
             GESCHAFFT ✓
           </BigButton>
-          <button onClick={() => onResolve(0, 0, { text: 'SCHADE…', color: PALETTE.danger })} style={skipLink}>Nicht geschafft</button>
+          <button onClick={() => sfxResolve(0, 0, { text: 'SCHADE…', color: PALETTE.danger })} style={skipLink}>Nicht geschafft</button>
         </div>
       );
     } else {
       action = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', gap: 10 }}>
-            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(actingTeam)} onClick={() => onResolve(
+            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(actingTeam)} onClick={() => sfxResolve(
               actingTeam === 'A' ? 2 : 0, actingTeam === 'B' ? 2 : 0,
               { text: 'REINGELEGT!', color: teamColor(actingTeam) })} sub={`${tn(actingTeam)} +2`}>
               REINGELEGT
             </BigButton>
-            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(guessTeam)} onClick={() => onResolve(
+            <BigButton style={{ flex: 1, padding: '18px 8px' }} color={teamColor(guessTeam)} onClick={() => sfxResolve(
               guessTeam === 'A' ? 2 : 0, guessTeam === 'B' ? 2 : 0,
               { text: 'RICHTIG GERATEN!', color: teamColor(guessTeam) })} sub={`${tn(guessTeam)} +2`}>
               GERATEN
             </BigButton>
           </div>
-          <button onClick={() => onResolve(0, 0, { text: 'KEIN PUNKT', color: PALETTE.dim })} style={skipLink}>Kein Punkt</button>
+          <button onClick={() => sfxResolve(0, 0, { text: 'KEIN PUNKT', color: PALETTE.dim })} style={skipLink}>Kein Punkt</button>
         </div>
       );
     }
