@@ -5,11 +5,33 @@ const RUDEL_SOUND_KEY = 'rudel_v1_muted';
 
 const RudelSound = (function () {
   let ctx = null;
+  let unlocked = false;
   let muted = false;
   try { muted = localStorage.getItem(RUDEL_SOUND_KEY) === 'true'; } catch (e) {}
 
   const listeners = new Set();
   const recent = {};
+
+  // iOS/Android entsperren: AudioContext IN der ersten Touch-Geste anlegen
+  // und einen stillen Buffer abspielen. Erst danach reagiert iOS auf Sound.
+  function unlock() {
+    if (unlocked) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!ctx) ctx = new AC();
+      const buf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+      if (ctx.state === 'suspended') ctx.resume();
+      unlocked = true;
+    } catch (e) {}
+  }
+  ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, unlock, { passive: true })
+  );
 
   function ensure() {
     if (muted) return null;
